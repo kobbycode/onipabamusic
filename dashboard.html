@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Onipaba Music</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin-forms.css">
+
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+</head>
+
+<body>
+    <!-- Auth handled by auth.js -->
+    <script>
+        // Optional: explicit check or logging
+        console.log('Dashboard loaded, waiting for auth...');
+    </script>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-logo">
+                <a href="index.html">
+                    <img src="images/logo-v2.jpg" alt="Onipaba Music">
+                </a>
+            </div>
+            <div class="admin-user">
+                <span class="admin-user-name" id="currentUserName">Admin User</span>
+                <button class="btn-logout" onclick="logout()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <path
+                            d="M9 17H5C4.46957 17 3.96086 16.7893 3.58579 16.4142C3.21071 16.0391 3 15.5304 3 15V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"
+                            stroke-width="1.5" stroke-linecap="round" />
+                        <path d="M13 13L17 9L13 5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M17 9H7" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <nav class="admin-nav">
+            <a href="#dashboard" class="admin-nav-link active" data-section="dashboard">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M3 4C3 3.44772 3.44772 3 4 3H7C7.55228 3 8 3.44772 8 4V7C8 7.55228 7.55228 8 7 8H4C3.44772 8 3 7.55228 3 7V4Z" />
+                    <path
+                        d="M3 13C3 12.4477 3.44772 12 4 12H7C7.55228 12 8 12.4477 8 13V16C8 16.5523 7.55228 17 7 17H4C3.44772 17 3 16.5523 3 16V13Z" />
+                    <path
+                        d="M12 4C12 3.44772 12.4477 3 13 3H16C16.5523 3 17 3.44772 17 4V7C17 7.55228 16.5523 8 16 8H13C12.4477 8 12 7.55228 12 7V4Z" />
+                    <path
+                        d="M12 13C12 12.4477 12.4477 12 13 12H16C16.5523 12 17 12.4477 17 13V16C17 16.5523 16.5523 17 16 17H13C12.4477 17 12 16.5523 12 16V13Z" />
+                </svg>
+                Dashboard
+            </a>
+            <a href="#videos" class="admin-nav-link" data-section="videos">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M6 4L15 10L6 16V4Z" />
+                </svg>
+                Manage Videos
+            </a>
+            <a href="#audios" class="admin-nav-link" data-section="audios">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                    <circle cx="8" cy="12" r="2" stroke-width="1.5" />
+                    <path d="M10 12V4L16 5V13" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                Manage Audios
+            </a>
+            <a href="#pdfs" class="admin-nav-link" data-section="pdfs">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M4 4C4 2.89543 4.89543 2 6 2H11L16 7V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" />
+                </svg>
+                Manage PDFs
+            </a>
+            <a href="#news" class="admin-nav-link" data-section="news">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M2 5C2 3.89543 2.89543 3 4 3H16C17.1046 3 18 3.89543 18 5V15C18 16.1046 17.1046 17 16 17H4C2.89543 17 2 16.1046 2 15V5Z" />
+                    <path d="M6 7H10M6 10H14M6 13H14" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                Manage News
+            </a>
+            <a href="#users" class="admin-nav-link superadmin-only" data-section="users">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M14 6C14 8.20914 12.2091 10 10 10C7.79086 10 6 8.20914 6 6C6 3.79086 7.79086 2 10 2C12.2091 2 14 3.79086 14 6Z" />
+                    <path d="M2 18C2 14.6863 4.68629 12 8 12H12C15.3137 12 18 14.6863 18 18V18H2V18Z" />
+                </svg>
+                Manage Users
+            </a>
+            <a href="#inquiries" class="admin-nav-link" data-section="inquiries">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
+                Inquiries
+            </a>
+            <a href="#subscribers" class="admin-nav-link" data-section="subscribers">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z" />
+                </svg>
+                Subscribers
+            </a>
+            <a href="#chat" class="admin-nav-link superadmin-only" data-section="chat">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10C18 14.4183 14.4183 18 10 18C8.58667 18 7.25701 17.6338 6.09638 16.9893L2 18L3.01254 13.9036C2.36622 12.743 2 11.4133 2 10Z" />
+                </svg>
+                Manage Chat
+            </a>
+            <a href="#settings" class="admin-nav-link superadmin-only" data-section="settings">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M10 2C10.7956 2 11.5587 2.31607 12.1213 2.87868C12.6839 3.44129 13 4.20435 13 5V6H16C16.5304 6 17.0391 6.21071 17.4142 6.58579C17.7893 6.96086 18 7.46957 18 8V16C18 16.5304 17.7893 17.0391 17.4142 17.4142C17.0391 17.7893 16.5304 18 16 18H4C3.46957 18 2.96086 17.7893 2.58579 17.4142C2.21071 17.0391 2 16.5304 2 16V8C2 7.46957 2.21071 6.96086 2.58579 6.58579C2.96086 6.21071 3.46957 6 4 6H7V5C7 4.20435 7.31607 3.44129 7.87868 2.87868C8.44129 2.31607 9.20435 2 10 2ZM9 11C9 10.7348 8.89464 10.4804 8.70711 10.2929C8.51957 10.1054 8.26522 10 8 10C7.73478 10 7.48043 10.1054 7.29289 10.2929C7.10536 10.4804 7 10.7348 7 11V13C7 13.2652 7.10536 13.5196 7.29289 13.7071C7.48043 13.8946 7.73478 14 8 14C8.26522 14 8.5196 13.8946 8.70711 13.7071C8.89464 13.5196 9 13.2652 9 13V11ZM12 10C12.2652 10 12.5196 10.1054 12.7071 10.2929C12.8946 10.4804 13 10.7348 13 11V13C13 13.2652 12.8946 13.5196 12.7071 13.7071C12.5196 13.8946 12.2652 14 12 14C11.7348 14 11.4804 13.8946 11.2929 13.7071C11.1054 13.5196 11 13.2652 11 13V11C11 10.7348 11.1054 10.4804 11.2929 10.2929C11.4804 10.1054 11.7348 10 12 10Z" />
+                </svg>
+                Website Settings
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Mobile Menu Toggle for Admin -->
+    <button class="admin-menu-toggle" id="adminMenuToggle" aria-label="Toggle admin menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Dashboard Content -->
+    <section class="dashboard-section">
+        <div class="container">
+            <!-- Dashboard Overview Section -->
+            <div id="admin-dashboard" class="admin-section">
+                <!-- User Profile Header -->
+                <div class="dashboard-header">
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <svg width="80" height="80" viewBox="0 0 80 80" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="40" cy="40" r="40" fill="rgba(212, 175, 55, 0.1)" />
+                                <circle cx="40" cy="28" r="12" stroke="#D4AF37" stroke-width="2" />
+                                <path d="M20 65C20 54.5066 28.5066 46 39 46H41C51.4934 46 60 54.5066 60 65"
+                                    stroke="#D4AF37" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <div class="user-info">
+                            <h2 class="user-name">Welcome, Admin</h2>
+                            <p class="user-email">Manage your content from here</p>
+                        </div>
+                    </div>
+                    <div class="dashboard-stats" id="dashboardStats">
+                        <!-- Stats will be loaded dynamically via admin-dashboard-metrics.js -->
+                        <div class="loading-spinner"
+                            style="text-align: center; width: 100%; grid-column: 1 / -1; padding: 2rem;">Loading
+                            metrics...</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-section-block">
+                    <h3 class="section-title">Quick Actions</h3>
+                    <div class="quick-actions-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                        <button class="quick-action-btn"
+                            onclick="document.querySelector('[data-section=videos]').click()">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M6 4L15 10L6 16V4Z" />
+                            </svg>
+                            Manage Videos
+                        </button>
+                        <button class="quick-action-btn"
+                            onclick="document.querySelector('[data-section=audios]').click()">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                                <circle cx="8" cy="12" r="2" stroke-width="1.5" />
+                                <path d="M10 12V4L16 5V13" stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                            Manage Audios
+                        </button>
+                        <button class="quick-action-btn"
+                            onclick="document.querySelector('[data-section=pdfs]').click()">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+                                <path
+                                    d="M4 4C4 2.89543 4.89543 2 6 2H11L16 7V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" />
+                            </svg>
+                            Manage PDFs
+                        </button>
+                        <button class="quick-action-btn"
+                            onclick="document.querySelector('[data-section=news]').click()">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+                                <path
+                                    d="M2 5C2 3.89543 2.89543 3 4 3H16C17.1046 3 18 3.89543 18 5V15C18 16.1046 17.1046 17 16 17H4C2.89543 17 2 16.1046 2 15V5Z" />
+                            </svg>
+                            Manage News
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Management Section -->
+            <div id="admin-videos" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage Videos</h2>
+                    <button class="btn-admin-primary" onclick="showVideoForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add New Video
+                    </button>
+                </div>
+
+                <!-- Video Form (Initially Hidden) -->
+                <div id="videoForm" class="admin-form" style="display: none;">
+                    <h3 class="form-title" id="videoFormTitle">Add New Video</h3>
+                    <form id="videoFormElement" onsubmit="saveVideo(event)">
+                        <input type="hidden" id="videoIndex" value="">
+                        <input type="hidden" id="videoId" value="">
+                        <input type="hidden" id="videoFileData" value="">
+                        <input type="hidden" id="videoThumbnailData" value="">
+
+                        <div class="form-group">
+                            <label for="videoFile">Upload Video File (Optional)</label>
+                            <input type="file" id="videoFile" accept="video/*" onchange="handleVideoFileUpload(event)">
+                            <small
+                                style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Upload a
+                                video to auto-detect duration</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="videoTitle">Video Title *</label>
+                                <input type="text" id="videoTitle" required placeholder="e.g., O Magnum Mysterium">
+                            </div>
+                            <div class="form-group">
+                                <label for="videoComposer">Composed By</label>
+                                <input type="text" id="videoComposer" placeholder="e.g., Morten Lauridsen">
+                            </div>
+                            <div class="form-group">
+                                <label for="videoDuration">Duration *</label>
+                                <input type="text" id="videoDuration" required placeholder="Auto-detected"
+                                    pattern="[0-9]+:[0-9]{2}" readonly>
+                                <small
+                                    style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Detected
+                                    from video file, or enter manually</small>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="videoMeta">Category/Type *</label>
+                                <input type="text" id="videoMeta" required placeholder="e.g., Concert Performance">
+                            </div>
+                            <div class="form-group">
+                                <label for="videoThumbnailFile">Upload Thumbnail Image</label>
+                                <input type="file" id="videoThumbnailFile" accept="image/*"
+                                    onchange="handleVideoThumbnailUpload(event)">
+                                <small
+                                    style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Custom
+                                    thumbnail for this video</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="videoUrl">Video URL (Optional)</label>
+                            <input type="url" id="videoUrl" placeholder="https://youtube.com/watch?v=...">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save Video</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hideVideoForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Videos List -->
+                <div id="videosList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Composer</th>
+                                <th>Duration</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="videosTableBody">
+                            <!-- Videos will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div id="videosEmptyState" class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="32" cy="32" r="30" />
+                            <path d="M24 20L44 32L24 44V20Z" />
+                        </svg>
+                        <p>No videos yet</p>
+                        <button class="btn-admin-primary" onclick="showVideoForm()">Add Your First Video</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audios Management Section -->
+            <div id="admin-audios" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage Audios</h2>
+                    <button class="btn-admin-primary" onclick="showAudioForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add New Audio
+                    </button>
+                </div>
+
+                <!-- Audio Form (Initially Hidden) -->
+                <div id="audioForm" class="admin-form" style="display: none;">
+                    <h3 class="form-title" id="audioFormTitle">Add New Audio</h3>
+                    <form id="audioFormElement" onsubmit="saveAudio(event)">
+                        <input type="hidden" id="audioIndex" value="">
+                        <input type="hidden" id="audioId" value="">
+                        <input type="hidden" id="audioFileData" value="">
+                        <input type="hidden" id="audioCoverData" value="">
+
+                        <div class="form-group">
+                            <label for="audioFile">Upload Audio File (Optional)</label>
+                            <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioFileUpload(event)">
+                            <small
+                                style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Upload
+                                an audio file to auto-detect duration</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="audioTitle">Track Title *</label>
+                                <input type="text" id="audioTitle" required placeholder="e.g., Ave Maria">
+                            </div>
+                            <div class="form-group">
+                                <label for="audioComposer">Composed By</label>
+                                <input type="text" id="audioComposer" placeholder="e.g., Franz Schubert">
+                            </div>
+                            <div class="form-group">
+                                <label for="audioDuration">Duration *</label>
+                                <input type="text" id="audioDuration" required placeholder="Auto-detected"
+                                    pattern="[0-9]+:[0-9]{2}" readonly>
+                                <small
+                                    style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Detected
+                                    from audio file, or enter manually</small>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="audioArtist">Artist *</label>
+                                <input type="text" id="audioArtist" required placeholder="e.g., By John Onipaba">
+                            </div>
+                            <div class="form-group">
+                                <label for="audioCoverFile">Upload Cover Image</label>
+                                <input type="file" id="audioCoverFile" accept="image/*"
+                                    onchange="handleAudioCoverUpload(event)">
+                                <small
+                                    style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Custom
+                                    cover art for this track</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="audioUrl">Audio File URL (Optional)</label>
+                            <input type="url" id="audioUrl" placeholder="https://soundcloud.com/...">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save Audio</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hideAudioForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Audios List -->
+                <div id="audiosList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Composer</th>
+                                    <th>Artist</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </thead>
+                        <tbody id="audiosTableBody">
+                            <!-- Audios will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div id="audiosEmptyState" class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="32" cy="32" r="30" />
+                            <circle cx="24" cy="40" r="8" />
+                            <path d="M32 40V16L48 20V44" />
+                        </svg>
+                        <p>No audio tracks yet</p>
+                        <button class="btn-admin-primary" onclick="showAudioForm()">Add Your First Audio</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDFs Management Section -->
+            <div id="admin-pdfs" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage PDFs</h2>
+                    <button class="btn-admin-primary" onclick="showPdfForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add New PDF
+                    </button>
+                </div>
+
+                <!-- PDF Form (Initially Hidden) -->
+                <div id="pdfForm" class="admin-form" style="display: none;">
+                    <h3 class="form-title" id="pdfFormTitle">Add New PDF</h3>
+                    <form id="pdfFormElement" onsubmit="savePdf(event)">
+                        <input type="hidden" id="pdfIndex" value="">
+                        <input type="hidden" id="pdfId" value="">
+                        <input type="hidden" id="pdfFileData" value="">
+
+                        <div class="form-group">
+                            <label for="pdfFile">Upload PDF File (Optional)</label>
+                            <input type="file" id="pdfFile" accept="application/pdf,.pdf"
+                                onchange="handlePdfFileUpload(event)">
+                            <small
+                                style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Upload a
+                                PDF to auto-detect file size</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="form-group">
+                                    <label for="pdfTitle">PDF Title *</label>
+                                    <input type="text" id="pdfTitle" required
+                                        placeholder="e.g., O Magnum Mysterium Sheet Music">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pdfComposer">Composed By</label>
+                                    <input type="text" id="pdfComposer" placeholder="e.g., Morten Lauridsen">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pdfSize">File Size *</label>
+                                    <input type="text" id="pdfSize" required placeholder="Auto-detected" readonly>
+                                    <small
+                                        style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Detected
+                                        from PDF file, or enter manually</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pdfDescription">Description *</label>
+                            <input type="text" id="pdfDescription" required placeholder="e.g., SATB arrangement">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pdfUrl">PDF File URL (Optional)</label>
+                            <input type="url" id="pdfUrl" placeholder="https://example.com/file.pdf">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save PDF</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hidePdfForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PDFs List -->
+                <div id="pdfsList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Composer</th>
+                                <th>Description</th>
+                                <th>Size</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pdfsTableBody">
+                            <!-- PDFs will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div id="pdfsEmptyState" class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="16" y="8" width="32" height="48" rx="2" />
+                            <path d="M24 20H40M24 28H40M24 36H32" />
+                        </svg>
+                        <p>No PDFs yet</p>
+                        <button class="btn-admin-primary" onclick="showPdfForm()">Add Your First PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Management Section -->
+            <div id="admin-news" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage News</h2>
+                    <button class="btn-admin-primary" onclick="showNewsForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add New Article
+                    </button>
+                </div>
+
+                <!-- News Form (Initially Hidden) -->
+                <div id="newsForm" class="admin-form" style="display: none;">
+                    <h3 class="form-title" id="newsFormTitle">Add New Article</h3>
+                    <form id="newsFormElement" onsubmit="saveNews(event)">
+                        <input type="hidden" id="newsIndex" value="">
+                        <input type="hidden" id="newsId" value="">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newsTitle">Article Title *</label>
+                                <input type="text" id="newsTitle" required placeholder="e.g., Concert Announcement">
+                            </div>
+                            <div class="form-group">
+                                <label for="newsDate">Date *</label>
+                                <input type="date" id="newsDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newsCategory">Category *</label>
+                                <input type="text" id="newsCategory" required placeholder="e.g., Events">
+                            </div>
+                            <div class="form-group">
+                                <label for="newsImageFile">Article Image</label>
+                                <input type="file" id="newsImageFile" accept="image/*"
+                                    onchange="window.currentNewsFile = this.files[0]">
+                                <input type="hidden" id="newsImageUrl">
+                                <small
+                                    style="display: block; color: var(--color-text-secondary); margin-top: 4px;">Upload
+                                    a custom image for this article.</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newsExcerpt">Excerpt *</label>
+                            <textarea id="newsExcerpt" required placeholder="Brief summary..." rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newsContent">Full Content (Optional)</label>
+                            <textarea id="newsContent" placeholder="Full article content..." rows="6"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save Article</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hideNewsForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- News List -->
+                <div id="newsList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Excerpt</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="newsTableBody">
+                            <!-- News will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div id="newsEmptyState" class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="12" y="16" width="40" height="32" rx="2" />
+                            <line x1="20" y1="24" x2="44" y2="24" />
+                            <line x1="20" y1="32" x2="44" y2="32" />
+                            <line x1="20" y1="40" x2="36" y2="40" />
+                        </svg>
+                        <p>No news articles yet</p>
+                        <button class="btn-admin-primary" onclick="showNewsForm()">Add Your First Article</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inquiries Management Section -->
+            <div id="admin-inquiries" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage Inquiries</h2>
+                </div>
+
+                <div id="inquiriesList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inquiriesTableBody">
+                            <!-- Inquiries will be inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="inquiriesEmptyState" class="empty-state">
+                        <p>No inquiries yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscribers Management Section -->
+            <div id="admin-subscribers" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage Subscribers</h2>
+                </div>
+
+                <div id="subscribersList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Subscribed At</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscribersTableBody">
+                            <!-- Subscribers will be inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="subscribersEmptyState" class="empty-state">
+                        <p>No subscribers yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Management Section (Super Admin Only) -->
+            <div id="admin-users" class="admin-section superadmin-only" style="display: none;">
+                <h2 class="admin-section-title">User Management</h2>
+
+                <div class="admin-content-header">
+                    <p style="color: var(--color-text-secondary);">Manage admin users and their permissions</p>
+                    <button class="btn-admin-primary" onclick="showUserForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add New User
+                    </button>
+                </div>
+
+                <!-- User Form (Initially Hidden) -->
+                <div id="userForm" class="admin-form" style="display: none; margin-top: 2rem;">
+                    <h3 class="form-title" id="userFormTitle">Add New User</h3>
+                    <form id="userFormElement" onsubmit="saveUser(event)">
+                        <input type="hidden" id="userIndex" value="">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="userName">Full Name *</label>
+                                <input type="text" id="userName" required placeholder="e.g., John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="userEmail">Email Address *</label>
+                                <input type="email" id="userEmail" required placeholder="e.g., john@example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="userPassword">Password *</label>
+                                <input type="password" id="userPassword" required placeholder="Min. 6 characters"
+                                    minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label for="userRole">Role *</label>
+                                <select id="userRole" required>
+                                    <option value="">Select Role</option>
+                                    <option value="superadmin">Super Admin (Full Access)</option>
+                                    <option value="admin">Admin (Editor - Limited Access)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save User</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hideUserForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Users List -->
+                <div id="usersList" class="admin-table-container" style="margin-top: 2rem;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat & Moderation Section -->
+        <div id="admin-chat" class="admin-section superadmin-only" style="display: none;">
+            <h2 class="admin-section-title">Chat & Moderation</h2>
+
+            <div class="admin-content-header">
+                <p style="color: var(--color-text-secondary);">Manage channels and moderate users</p>
+                <button class="btn-admin-primary" onclick="showChannelForm()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                        <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Create New Channel
+                </button>
+            </div>
+
+            <!-- Channel Form -->
+            <div id="channelForm" class="admin-form" style="display: none; margin-top: 1rem;">
+                <h3 class="form-title" id="channelFormTitle">Create New Channel</h3>
+                <form id="channelFormElement" onsubmit="window.saveChannel(event)">
+                    <input type="hidden" id="channelId" value="">
+                    <div class="form-group">
+                        <label for="channelName">Channel Name *</label>
+                        <input type="text" id="channelName" required placeholder="e.g., Rehearsal Tips">
+                    </div>
+                    <div class="form-group">
+                        <label for="channelDescription">Subtitle / Description *</label>
+                        <input type="text" id="channelDescription" required placeholder="e.g., Share your techniques">
+                    </div>
+                    <div class="form-group">
+                        <label for="channelIcon">Channel Image</label>
+                        <input type="file" id="channelIcon" accept="image/*" class="admin-file-input">
+                        <small style="color: var(--color-text-muted); font-size: 0.75rem;">Upload a group image or leave
+                            empty for default '#'.</small>
+                        <div id="channelIconPreview" style="margin-top: 10px; display: none;">
+                            <img src="" id="iconPreviewImg" alt="Preview"
+                                style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-gold-primary);">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-admin-primary">Save Channel</button>
+                        <button type="button" class="btn-admin-secondary" onclick="hideChannelForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabs Container -->
+            <div class="admin-tabs-container">
+                <div class="admin-tabs">
+                    <button class="tab-link active" onclick="switchChatTab('channels', this)">Channels</button>
+                    <button class="tab-link" onclick="switchChatTab('moderation', this)">User
+                        Moderation</button>
+                </div>
+            </div>
+
+            <!-- Channels List -->
+            <div id="chat-channels-tab" class="chat-tab-content">
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Channel</th>
+                                <th>Description / Subtitle</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="channelsTableBody">
+                            <!-- Data will be loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Moderation List -->
+            <div id="chat-moderation-tab" class="chat-tab-content" style="display: none;">
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moderationTableBody">
+                            <!-- Data will be loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Website Settings Section -->
+        <div id="admin-settings" class="admin-section" style="display: none;">
+            <h2 class="admin-section-title">Website Settings</h2>
+
+            <!-- Header Management -->
+            <div class="settings-subsection">
+                <div class="admin-content-header">
+                    <h3 class="subsection-title">Header Navigation</h3>
+                    <button class="btn-admin-primary" onclick="showNavLinkForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add Nav Link
+                    </button>
+                </div>
+
+                <!-- Nav Link Form -->
+                <div id="navLinkForm" class="admin-form" style="display: none;">
+                    <h4 class="form-title" id="navLinkFormTitle">Add Navigation Link</h4>
+                    <form id="navLinkFormElement" onsubmit="saveNavLink(event)">
+                        <input type="hidden" id="navLinkIndex" value="">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="navLinkText">Link Text *</label>
+                                <input type="text" id="navLinkText" required placeholder="e.g., Home">
+                            </div>
+                            <div class="form-group">
+                                <label for="navLinkUrl">URL *</label>
+                                <input type="text" id="navLinkUrl" required placeholder="e.g., index.html">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save Link</button>
+                            <button type="button" class="btn-admin-secondary"
+                                onclick="hideNavLinkForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Nav Links List -->
+                <div id="navLinksList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Link Text</th>
+                                <th>URL</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="navLinksTableBody">
+                            <!-- Nav links will be inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="navLinksEmptyState" class="empty-state" style="padding: 2rem;">
+                        <p>No navigation links yet</p>
+                        <button class="btn-admin-primary" onclick="showNavLinkForm()">Add First Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Management -->
+            <div class="settings-subsection" style="margin-top: 3rem;">
+                <div class="admin-content-header">
+                    <h3 class="subsection-title">Footer Settings</h3>
+                </div>
+
+                <!-- Footer Content Form -->
+                <div class="admin-form">
+                    <form id="footerFormElement" onsubmit="saveFooterSettings(event)">
+                        <div class="form-group">
+                            <label for="footerTitle">Footer Title *</label>
+                            <input type="text" id="footerTitle" required placeholder="e.g., Onipaba Music">
+                        </div>
+                        <div class="form-group">
+                            <label for="footerDescription">Footer Description *</label>
+                            <textarea id="footerDescription" required placeholder="Brief description..."
+                                rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="footerNewsletter">Newsletter Section Title</label>
+                            <input type="text" id="footerNewsletter" placeholder="e.g., Stay Updated">
+                        </div>
+                        <div class="form-group">
+                            <label for="footerCopyright">Copyright Text *</label>
+                            <input type="text" id="footerCopyright" required
+                                placeholder="e.g., © 2025 Onipaba Music. All rights reserved.">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save Footer Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="admin-ui-enhancements.js"></script>
+    <script src="admin-dashboard-metrics.js"></script>
+    <!-- Core Scripts -->
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-pdfs-news.js"></script>
+    <script src="admin-users.js"></script>
+    <script src="admin-settings.js"></script>
+    <script src="admin-inquiries.js"></script>
+    <script src="admin-chat.js"></script>
+    <script src="admin-file-uploads.js"></script>
+    <script src="admin-notifications.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

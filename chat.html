@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Chat and connect with the Onipaba Music community.">
+    <title>Chat - Onipaba Music</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Material Icons for WhatsApp-like icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="images/logo-v2.jpg" alt="Onipaba Music">
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="about.html" class="nav-link">About</a>
+                    <a href="videos.html" class="nav-link">Videos</a>
+                    <a href="audios.html" class="nav-link">Audios</a>
+                    <a href="pdfs.html" class="nav-link">PDFs</a>
+                    <a href="news.html" class="nav-link">News</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                    <a href="chat.html" class="nav-link active">Chat</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="search-trigger" id="searchTrigger" aria-label="Open Search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="login.html" class="btn-login"
+                        style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="6" r="4" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M4 18C4 14.6863 6.68629 12 10 12C13.3137 12 16 14.6863 16 18" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Login
+                    </a>
+                </div>
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Chat Section -->
+    <div class="whatsapp-container">
+        <!-- Sidebar -->
+        <div class="wa-sidebar">
+            <div class="wa-header">
+                <div class="user-avatar">
+                    <img src="https://ui-avatars.com/api/?name=%3F&background=D4AF37&color=fff" id="currentUserAvatar"
+                        alt="User">
+                </div>
+                <div class="wa-header-actions">
+
+                </div>
+
+                <!-- Sidebar Menu -->
+                <div class="wa-dropdown-menu" id="sidebarMenu"
+                    style="top: 50px; right: 10px; left: auto; width: 150px;">
+                    <div class="wa-dropdown-item" id="sidebarProfile">Profile</div>
+                    <div class="wa-dropdown-item" id="sidebarSettings">Settings</div>
+                    <div class="wa-dropdown-item" id="sidebarLogout">Log out</div>
+                </div>
+            </div>
+            <div class="wa-search-bar">
+                <div class="wa-search-input-wrapper">
+                    <span class="material-icons">search</span>
+                    <input type="text" id="channelSearchInput" placeholder="Search or start new chat">
+                </div>
+            </div>
+            <div class="wa-chat-list" id="channelList">
+                <div class="wa-chat-item active">
+                    <div class="wa-chat-info">
+                        <span class="wa-chat-name" style="padding: 20px; color: var(--color-text-muted);">Loading
+                            channels...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="wa-main">
+            <div class="wa-header">
+                <div class="wa-avatar">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                        id="activeChannelAvatar" alt="Channel" style="opacity: 0;">
+                </div>
+                <div class="wa-contact-info">
+                    <span class="wa-contact-name" id="activeChannelName"></span>
+                    <span class="wa-contact-status" id="activeChannelStatus"></span>
+                </div>
+                <div class="wa-header-actions">
+                    <span class="material-icons" id="chatSearchBtn">search</span>
+                    <span class="material-icons" id="chatOptionsBtn">more_vert</span>
+                </div>
+
+                <!-- Chat Options Menu -->
+                <div class="wa-dropdown-menu" id="chatOptionsMenu">
+                    <div class="wa-dropdown-item" id="menuInfo">Channel Info</div>
+                    <div class="wa-dropdown-item" id="menuRefresh">Refresh Chat</div>
+                    <div class="wa-dropdown-item" id="menuClear">Clear View</div>
+                </div>
+
+                <!-- Search Bar Overlay -->
+                <div class="wa-chat-search-bar" id="chatSearchBar">
+                    <span class="material-icons" id="closeSearchBtn">arrow_back</span>
+                    <input type="text" id="chatSearchInput" placeholder="Search...">
+                    <span class="material-icons" id="searchUpBtn">keyboard_arrow_up</span>
+                    <span class="material-icons" id="searchDownBtn">keyboard_arrow_down</span>
+                </div>
+            </div>
+
+            <div class="wa-chat-body" id="chatMessages">
+                <!-- Messages will be loaded here dynamically -->
+                <div class="wa-system-message">
+                    <span>Welcome to the community!</span>
+                </div>
+            </div>
+
+            <form class="wa-footer" id="chatForm">
+                <input type="file" id="fileAttachment" accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
+                    style="display: none;" multiple>
+
+                <!-- Attachment Menu -->
+                <div class="attachment-menu" id="attachmentMenu">
+                    <div class="attachment-option" data-type="media">
+                        <span class="material-icons"
+                            style="background: linear-gradient(135deg, #ac2aea, #bf59cf);">image</span>
+                        <span>Photos & Videos</span>
+                    </div>
+                    <div class="attachment-option" data-type="audio">
+                        <span class="material-icons"
+                            style="background: linear-gradient(135deg, #d3396d, #e65a8f);">headphones</span>
+                        <span>Audio</span>
+                    </div>
+                    <div class="attachment-option" data-type="document">
+                        <span class="material-icons"
+                            style="background: linear-gradient(135deg, #5157ae, #5f66cd);">description</span>
+                        <span>Document</span>
+                    </div>
+                </div>
+
+                <!-- Emoji Picker Menu -->
+                <div class="emoji-picker-menu" id="emojiPickerMenu"></div>
+
+                <span class="material-icons wa-icon-btn" id="emojiBtn">sentiment_satisfied_alt</span>
+                <span class="material-icons wa-icon-btn" id="attachBtn">attach_file</span>
+                <div class="wa-input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off">
+                </div>
+                <button type="submit" style="background: none; border: none; padding: 0;">
+                    <span class="material-icons wa-icon-btn" style="color: #128C7E;">send</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="chat.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

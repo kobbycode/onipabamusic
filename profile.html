@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Onipaba Music</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Fix for white text on white background in dropdowns */
+        select option {
+            background-color: var(--color-bg-secondary, #1a1a1a);
+            color: var(--color-text-primary, #ffffff);
+        }
+
+        .auth-input option {
+            background: #1a1a1a;
+            color: white;
+            padding: 10px;
+        }
+    </style>
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="images/logo-v2.jpg" alt="Onipaba Music">
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="about.html" class="nav-link">About</a>
+                    <a href="videos.html" class="nav-link">Videos</a>
+                    <a href="audios.html" class="nav-link">Audios</a>
+                    <a href="pdfs.html" class="nav-link">PDFs</a>
+                    <a href="news.html" class="nav-link">News</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                    <a href="chat.html" class="nav-link">Chat</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="search-trigger" id="searchTrigger" aria-label="Open Search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="login.html" class="btn-login"
+                        style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="6" r="4" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M4 18C4 14.6863 6.68629 12 10 12C13.3137 12 16 14.6863 16 18" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Profile
+                    </a>
+                </div>
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-main">
+        <div class="container">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="user-large-avatar">
+                        <svg width="60" height="60" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="6" r="4" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M4 18C4 14.6863 6.68629 12 10 12C13.3137 12 16 14.6863 16 18" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <div class="profile-identity">
+                        <h1 id="profileName">Loading...</h1>
+                        <p id="profileEmail">Member Since ...</p>
+                    </div>
+                </div>
+
+                <div class="profile-details-grid">
+                    <div class="detail-item">
+                        <label>Display Name</label>
+                        <input type="text" id="editName" class="auth-input"
+                            style="background: rgba(255,255,255,0.05); margin-top: 5px;">
+                    </div>
+                    <div class="detail-item">
+                        <label>Voice Part / Role</label>
+                        <select id="voicePart" class="auth-input"
+                            style="background: rgba(255,255,255,0.05); margin-top: 5px; color: var(--color-text-primary);">
+                            <option value="member">Member</option>
+                            <option value="soprano">Soprano</option>
+                            <option value="alto">Alto</option>
+                            <option value="tenor">Tenor</option>
+                            <option value="bass">Bass</option>
+                            <option value="choir-director">Choir Director</option>
+                            <option value="composer">Composer</option>
+                            <option value="listener">Listener</option>
+                        </select>
+                    </div>
+                    <div class="detail-item">
+                        <label>Joined Date</label>
+                        <p id="profileJoined" style="margin-top: 5px;">--</p>
+                    </div>
+                </div>
+
+                <div class="profile-actions" style="gap: 1rem;">
+                    <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfileChanges()">Save
+                        Changes</button>
+                    <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="images/logo-v2.jpg" alt="Onipaba Music">
+                    <p>Touching souls and elevating spirits through the divine power of choral harmony. Join us in our
+                        musical journey.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Onipaba Music. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        // Profile Page Logic
+        window.initProfilePage = function (user) {
+            firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
+                const data = doc.exists ? doc.data() : {};
+
+                // Populate Profile Info
+                document.getElementById('profileName').textContent = data.name || user.displayName || 'Member';
+                document.getElementById('profileEmail').textContent = user.email;
+
+                // Populate Form Fields
+                document.getElementById('editName').value = data.name || user.displayName || '';
+                document.getElementById('voicePart').value = data.voicePart || 'member';
+
+                // Handle Joined Date
+                if (data.joinedAt) {
+                    const date = data.joinedAt.toDate();
+                    document.getElementById('profileJoined').textContent = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } else {
+                    document.getElementById('profileJoined').textContent = 'Initial member';
+                }
+            }).catch(err => {
+                console.error("Error loading profile:", err);
+                document.getElementById('profileName').textContent = user.email;
+                document.getElementById('profileEmail').textContent = user.email;
+            });
+        };
+
+        // Save Profile Changes
+        async function saveProfileChanges() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            const newName = document.getElementById('editName').value;
+            const newVoicePart = document.getElementById('voicePart').value;
+            const btn = document.getElementById('saveProfileBtn');
+            const originalText = btn.textContent;
+
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                // Use set with merge:true to create doc if missing
+                await firebase.firestore().collection('users').doc(user.uid).set({
+                    name: newName,
+                    voicePart: newVoicePart
+                }, { merge: true });
+
+                document.getElementById('profileName').textContent = newName;
+                alert('Profile updated successfully!');
+            } catch (error) {
+                console.error("Update error:", error);
+                alert('Failed to update profile.');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

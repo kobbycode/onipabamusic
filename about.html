@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn about Onipaba Music, our mission, and our founder Japhet Onipaba Mireku.">
+    <title>About Us - Onipaba Music</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        .about-hero {
+            height: 60vh;
+            min-height: 400px;
+            background-image: linear-gradient(rgba(26, 20, 16, 0.4), rgba(26, 20, 16, 0.8)), url('images/about-hero.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .about-hero h1 {
+            font-family: var(--font-heading);
+            font-size: 3.5rem;
+            color: var(--color-gold-light);
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .about-subtitle {
+            font-size: 1.2rem;
+            color: var(--color-text-primary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .about-section {
+            padding: 80px 0;
+        }
+
+        .bio-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .bio-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .bio-content h2 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .bio-content p {
+            color: var(--color-text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .mission-box {
+            background: var(--color-bg-secondary);
+            padding: 3rem;
+            border-radius: 16px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            text-align: center;
+            margin: 4rem 0;
+        }
+
+        .mission-box h3 {
+            font-size: 2rem;
+            color: var(--color-text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .mission-text {
+            font-size: 1.25rem;
+            font-family: var(--font-heading);
+            color: var(--color-gold-light);
+            font-style: italic;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .team-card {
+            background: var(--color-bg-tertiary);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            transition: var(--transition-normal);
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--color-gold-primary);
+        }
+
+        .team-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--color-bg-secondary);
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--color-gold-primary);
+            border: 2px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .team-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .team-role {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .bio-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .about-hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="images/logo-v2.jpg" alt="Onipaba Music">
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="about.html" class="nav-link active">About</a>
+                    <a href="videos.html" class="nav-link">Videos</a>
+                    <a href="audios.html" class="nav-link">Audios</a>
+                    <a href="pdfs.html" class="nav-link">PDFs</a>
+                    <a href="news.html" class="nav-link">News</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                    <a href="chat.html" class="nav-link">Chat</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="search-trigger" id="searchTrigger" aria-label="Open Search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="login.html" class="btn-login"
+                        style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="6" r="4" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M4 18C4 14.6863 6.68629 12 10 12C13.3137 12 16 14.6863 16 18" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        Login
+                    </a>
+                </div>
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="about-hero">
+        <div class="container">
+            <h1>Our Story</h1>
+            <p class="about-subtitle">Dedicated to the preservation and innovation of sacred choral music.</p>
+        </div>
+    </div>
+
+    <section class="section about-section">
+        <div class="container">
+            <!-- Biography Section -->
+            <div class="bio-container">
+                <div class="bio-content">
+                    <h2>Japhet Onipaba Mireku</h2>
+                    <p>Japhet Onipaba Mireku is a renowned composer and conductor whose work bridges the gap between
+                        traditional sacred music and contemporary African choral expression. With over 20 years of
+                        experience leading choirs across the continent, his compositions are celebrated for their
+                        spiritual depth and intricate harmonies.</p>
+                    <p>His musical journey began in the local church choir, where he discovered his passion for
+                        harmonizing voices. Today, Onipaba Music serves as a platform to share this gift with the world,
+                        offering a vast library of original compositions and arrangements that inspire worship and
+                        reflection.</p>
+                </div>
+                <!-- Using one of the existing images as placeholder for bio if specific one not available, or re-use hero concept -->
+                <div class="bio-image-wrapper">
+                    <img src="images/news-concert.png" alt="Japhet Onipaba Mireku" class="bio-image">
+                </div>
+            </div>
+
+            <!-- Mission Statement -->
+            <div class="mission-box">
+                <h3>Our Mission</h3>
+                <p class="mission-text">"To touch souls and elevate spirits through the divine power of choral harmony."
+                </p>
+            </div>
+
+            <!-- Team Section -->
+            <div class="section-header">
+                <h3 class="section-title">The Team</h3>
+            </div>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">JM</div>
+                    <div class="team-name">Japhet Mireku</div>
+                    <div class="team-role">Founder & Director</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">SO</div>
+                    <div class="team-name">Sarah Osei</div>
+                    <div class="team-role">Lead Soprano</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">DA</div>
+                    <div class="team-name">David Asante</div>
+                    <div class="team-role">Assistant Conductor</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">KA</div>
+                    <div class="team-name">Kwame Appiah</div>
+                    <div class="team-role">Music Director</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="images/logo-v2.jpg" alt="Onipaba Music">
+                    <p>Touching souls and elevating spirits through the divine power of choral harmony. Join us in our
+                        musical journey.</p>
+                </div>
+                <div class="newsletter-section">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for the latest releases, concert dates, and exclusive content.</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" class="newsletter-input" placeholder="Enter your email address" required>
+                        <button type="submit" class="newsletter-btn">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Onipaba Music. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
