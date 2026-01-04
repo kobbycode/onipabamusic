@@ -28,6 +28,36 @@ if (mobileMenuToggle) {
 }
 
 // ==========================================
+// DYNAMIC NAV HIGHLIGHTING
+// ==========================================
+function highlightActiveNav() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // Reset active class
+        link.classList.remove('active');
+
+        // Check if current path matches href
+        // handles: index.html, / (root), or specific pages
+        const isHome = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
+        const linkIsHome = href === 'index.html' || href === './' || href === '/';
+
+        if (isHome && linkIsHome) {
+            link.classList.add('active');
+        } else if (href !== 'index.html' && href !== './' && href !== '/' && currentPath.includes(href)) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Run on load
+document.addEventListener('DOMContentLoaded', highlightActiveNav);
+
+// ==========================================
 // HEADER SCROLL EFFECT
 // ==========================================
 let lastScroll = 0;
@@ -38,11 +68,15 @@ window.addEventListener('scroll', () => {
 
     const currentScroll = window.pageYOffset;
 
-    if (currentScroll > 100) {
-        header.style.background = 'rgba(26, 20, 16, 0.98)';
-        header.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+    if (currentScroll > 50) {
+        header.style.background = 'rgba(26, 20, 16, 0.85)';
+        header.style.backdropFilter = 'blur(15px)';
+        header.style.padding = '0.5rem 0';
+        header.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
     } else {
         header.style.background = 'rgba(26, 20, 16, 0.95)';
+        header.style.backdropFilter = 'blur(10px)';
+        header.style.padding = '1rem 0';
         header.style.boxShadow = 'none';
     }
 
@@ -110,7 +144,6 @@ document.addEventListener('click', (e) => {
         const cover = playBtn.dataset.audioCover;
         const index = parseInt(playBtn.dataset.index);
 
-        console.log('Playing:', title, src);
         currentTrackIndex = index;
         loadTrack(src, title, artist, cover);
         return;
@@ -466,8 +499,6 @@ async function loadPublicContent() {
         publicContentData.news = newsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         publicContentData.audios = audiosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         publicContentData.pdfs = pdfsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        console.log('Public content loaded:', publicContentData);
 
         renderPublicVideos();
         renderPublicNews();

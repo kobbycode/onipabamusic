@@ -10,6 +10,11 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Debug Mode: Check for missing environment variables
+if (!firebaseConfig.apiKey) {
+    console.error('❌ FIREBASE ERROR: API Key is missing! Have you added VITE_FIREBASE_API_KEY to your deployment environment variables?');
+}
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
