@@ -50,6 +50,10 @@ function highlightActiveNav() {
             link.classList.add('active');
         } else if (href !== 'index.html' && href !== './' && href !== '/' && currentPath.includes(href)) {
             link.classList.add('active');
+        } else if (href === 'videos.html' && currentPath.includes('video-player.html')) {
+            link.classList.add('active');
+        } else if (href === 'news.html' && currentPath.includes('news-detail.html')) {
+            link.classList.add('active');
         }
     });
 }
@@ -790,29 +794,32 @@ function initVideoPlayer() {
                 ${playerHtml}
             </div>
             
-            <h1 class="video-player-title">${video.title}</h1>
-            
-            <div class="video-player-meta">
-                <div class="meta-item">
-                    <strong>Category</strong>
-                    ${video.meta || 'Performance'}
+            <div class="video-info-container">
+                <div class="video-header-section">
+                    <h1 class="video-player-title">${video.title}</h1>
+                    <div class="video-player-meta">
+                        <div class="meta-item">
+                            <strong>Category</strong>
+                            <span>${video.meta || 'Performance'}</span>
+                        </div>
+                        ${video.composedBy ? `
+                        <div class="meta-item">
+                            <strong>Composer</strong>
+                            <span>${video.composedBy}</span>
+                        </div>` : ''}
+                        <div class="meta-item">
+                            <strong>Date</strong>
+                            <span>${video.date || 'Recently Added'}</span>
+                        </div>
+                    </div>
                 </div>
-                ${video.composedBy ? `
-                <div class="meta-item">
-                    <strong>Composer</strong>
-                    ${video.composedBy}
-                </div>` : ''}
-                 <div class="meta-item">
-                    <strong>Date</strong>
-                     ${video.date || 'Recently Added'}
-                </div>
-            </div>
 
-            ${video.description ? `
-            <div class="video-description">
-                <h3 style="color: var(--color-gold-primary); margin-bottom: 0.5rem; font-family: var(--font-heading);">About this Video</h3>
-                <p>${video.description}</p>
-            </div>` : ''}
+                ${video.description ? `
+                <div class="video-description">
+                    <h3 class="description-title">About this Video</h3>
+                    <p>${video.description}</p>
+                </div>` : ''}
+            </div>
         `;
     } else {
         container.innerHTML = '<p class="error-message">Video not found.</p>';

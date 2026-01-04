@@ -142,6 +142,8 @@ body {
     width: 80px;
     object-fit: cover;
     border-radius: 50%;
+    background: #fff;
+    padding: 3px;
     transition: var(--transition-normal);
 }
 
@@ -154,6 +156,8 @@ body {
     width: 100px;
     object-fit: cover;
     border-radius: 50%;
+    background: #fff;
+    padding: 4px;
     margin-bottom: 2rem;
     transition: var(--transition-normal);
 }
@@ -207,9 +211,11 @@ body {
     padding: 0.6rem 1.5rem;
     background: rgba(212, 175, 55, 0.1);
     border: 1px solid var(--color-gold-primary);
-    border-radius: 0;
+    border-radius: 4px;
+    /* Slightly rounded for premium feel */
     color: var(--color-gold-primary);
     font-weight: 500;
+    text-decoration: none;
     transition: var(--transition-normal);
 }
 
@@ -3331,6 +3337,7 @@ video.msg-media-video {
 .wa-dropdown-item:hover {
     background: rgba(255, 255, 255, 0.05);
 }
+
 /* Premium Video Modal */
 .video-modal {
     position: fixed;
