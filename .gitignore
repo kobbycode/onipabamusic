@@ -9,6 +9,7 @@ node_modules/
 # Local config
 .env
 .env.local
+.env.*.local
 
 # Build outputs
 dist/
