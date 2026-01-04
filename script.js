@@ -385,29 +385,6 @@ function formatTime(seconds) {
 }
 
 
-// ==========================================
-// VIDEO CARD CLICK HANDLER
-// ==========================================
-// ==========================================
-// VIDEO CARD CLICK HANDLER
-// ==========================================
-function attachVideoCardListeners() {
-    const videoCards = document.querySelectorAll('.video-card');
-    videoCards.forEach(card => {
-        card.addEventListener('click', () => {
-            // In a real app, this would open a modal with the video
-            const titleEl = card.querySelector('.video-title');
-            if (titleEl) {
-                const videoTitle = titleEl.textContent;
-                console.log(`Playing video: ${videoTitle}`);
-                alert(`Playing video: ${videoTitle}\n\n(This would open a video player modal in the final version)`);
-            }
-        });
-    });
-}
-
-
-// ==========================================
 // PDF DOWNLOAD HANDLER
 // ==========================================
 const downloadButtons = document.querySelectorAll('.btn-download');
