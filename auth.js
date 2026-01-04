@@ -27,7 +27,7 @@ function handleLogin(event) {
             const userData = userDoc.data();
 
             if (userData && userData.role === 'admin') {
-                window.location.href = 'dashboard.html';
+                window.location.href = '/admin';
             } else {
                 window.location.href = 'profile.html';
             }
@@ -117,7 +117,7 @@ firebase.auth().onAuthStateChanged((user) => {
     const path = window.location.pathname;
     const isLoginPage = path.includes('login.html');
     const isSignupPage = path.includes('signup.html');
-    const isDashboard = path.includes('dashboard.html');
+    const isDashboard = path.includes('dashboard.html') || path.endsWith('/admin') || path.includes('/admin/');
     const isProfilePage = path.includes('profile.html');
 
     // Update Header Login Button globally
@@ -130,7 +130,7 @@ firebase.auth().onAuthStateChanged((user) => {
             firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
                 const data = doc.data();
                 if (data && data.role === 'admin') {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/admin';
                 } else {
                     window.location.href = 'profile.html';
                 }
