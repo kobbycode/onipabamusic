@@ -134,6 +134,9 @@ async function fetchCollection(collectionName) {
     }
 }
 
+// Expose globally for other admin scripts
+window.fetchCollection = fetchCollection;
+
 // ==========================================
 // FILE UPLOAD HANDLERS (Helpers)
 // ==========================================
