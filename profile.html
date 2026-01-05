@@ -182,9 +182,12 @@
         };
 
         // Save Profile Changes
-        async function saveProfileChanges() {
+        window.saveProfileChanges = async function () {
             const user = firebase.auth().currentUser;
-            if (!user) return;
+            if (!user) {
+                uiManager.showAlert('No user is logged in.', 'error');
+                return;
+            }
 
             const newName = document.getElementById('editName').value;
             const newVoicePart = document.getElementById('voicePart').value;
@@ -205,12 +208,12 @@
                 uiManager.showAlert('Profile updated successfully!', 'success');
             } catch (error) {
                 console.error("Update error:", error);
-                uiManager.showAlert('Failed to update profile.', 'error');
+                uiManager.showAlert('Failed to update profile: ' + error.message, 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
-        }
+        };
     </script>
     <script type="module" src="script.js"></script>
 </body>
