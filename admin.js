@@ -111,16 +111,25 @@ window.contentData = {
 
 // Generic Fetch Function
 async function fetchCollection(collectionName) {
+    // Critical Check: Ensure db is initialized
+    if (typeof db === 'undefined' || !db) {
+        console.error(`❌ [Admin] Firestore (db) is not initialized! Cannot fetch ${collectionName}.`);
+        alert(`Database connection error. Please refresh the page.`);
+        return [];
+    }
+
     try {
+        console.log(`🚀 [Admin] Fetching ${collectionName}...`);
         const snapshot = await db.collection(collectionName).get();
         window.contentData[collectionName] = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
-        console.log(`Fetched ${collectionName}:`, window.contentData[collectionName]);
+        console.log(`✅ [Admin] Fetched ${collectionName}: ${window.contentData[collectionName].length} items`, window.contentData[collectionName]);
         return window.contentData[collectionName];
     } catch (error) {
-        console.error(`Error fetching ${collectionName}:`, error);
+        console.error(`❌ [Admin] Error fetching ${collectionName}:`, error);
+        alert(`Error loading ${collectionName}: ${error.message}`);
         return [];
     }
 }
