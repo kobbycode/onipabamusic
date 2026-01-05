@@ -1,0 +1,71 @@
+/* ==========================================
+   CARD ENHANCEMENTS
+   Improved visual contrast for all content cards
+   ========================================== */
+
+/* Video Cards */
+.video-card {
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.video-card:hover {
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, 0.3) !important;
+    border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+/* Audio Cards */
+.audio-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.audio-card:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(212, 175, 55, 0.4) !important;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* News Cards */
+.news-card {
+    background: var(--color-bg-secondary) !important;
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.news-card:hover {
+    border-color: rgba(212, 175, 55, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
+    transform: translateY(-4px);
+}
+
+/* PDF Cards */
+.pdf-card {
+    background: var(--color-bg-secondary) !important;
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.pdf-card:hover {
+    border-color: rgba(212, 175, 55, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
+    transform: translateY(-4px);
+}
+
+/* Skeleton Cards - Enhanced visibility */
+.skeleton-card {
+    border: 1px solid rgba(212, 175, 55, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.skeleton-audio-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
+}
+
+.skeleton-news-card {
+    border: 1px solid rgba(212, 175, 55, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
