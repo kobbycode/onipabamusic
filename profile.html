@@ -148,6 +148,8 @@
 
     <script type="module" src="auth.js"></script>
     <script type="module">
+        import { uiManager } from './ui-manager.js';
+
         // Profile Page Logic
         window.initProfilePage = function (user) {
             firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
@@ -200,10 +202,10 @@
                 }, { merge: true });
 
                 document.getElementById('profileName').textContent = newName;
-                alert('Profile updated successfully!');
+                uiManager.showAlert('Profile updated successfully!', 'success');
             } catch (error) {
                 console.error("Update error:", error);
-                alert('Failed to update profile.');
+                uiManager.showAlert('Failed to update profile.', 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;

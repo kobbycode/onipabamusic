@@ -59,15 +59,10 @@ function saveNavLink(event) {
 
 // Delete Nav Link
 function deleteNavLink(index) {
-    if (window.showConfirm) {
-        window.showConfirm('Are you sure you want to delete this navigation link?', function () {
-            deleteContentItem('navLinks', index);
-            renderNavLinks();
-        });
-    } else if (confirm('Are you sure you want to delete this navigation link?')) {
+    uiManager.showConfirm('Are you sure you want to delete this navigation link?', function () {
         deleteContentItem('navLinks', index);
         renderNavLinks();
-    }
+    });
 }
 
 // Render Nav Links Table
@@ -131,7 +126,7 @@ function saveFooterSettings(event) {
     };
 
     saveContentData();
-    alert('Footer settings saved successfully!');
+    uiManager.showAlert('Footer settings saved successfully!', 'success');
 }
 
 // Initialize Website Settings on section load

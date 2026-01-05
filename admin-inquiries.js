@@ -89,11 +89,7 @@ window.viewInquiry = function (id) {
         <p style="white-space: pre-wrap; margin-top: 10px; color: var(--color-text-primary); font-family: inherit;">${inquiry.message}</p>
     `;
 
-    if (window.showAlert) {
-        window.showAlert(message, 'info');
-    } else {
-        alert(inquiry.message);
-    }
+    uiManager.showAlert(message, 'info');
 
     if (!inquiry.read) {
         markInquiryRead(id);
@@ -121,11 +117,7 @@ window.deleteInquiry = async function (id) {
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm('Are you sure you want to delete this inquiry?', doDelete);
-    } else if (confirm('Are you sure you want to delete this inquiry?')) {
-        doDelete();
-    }
+    uiManager.showConfirm('Are you sure you want to delete this inquiry?', doDelete);
 };
 
 // ==========================================
@@ -194,9 +186,5 @@ window.deleteSubscriber = async function (id) {
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm('Are you sure you want to remove this subscriber?', doDelete);
-    } else if (confirm('Are you sure you want to remove this subscriber?')) {
-        doDelete();
-    }
+    uiManager.showConfirm('Are you sure you want to remove this subscriber?', doDelete);
 };

@@ -152,7 +152,7 @@ window.savePdf = async function (event) {
         renderPdfs();
     } catch (error) {
         console.error('Error saving PDF', error);
-        alert("Error saving PDF: " + error.message);
+        uiManager.showAlert("Error saving PDF: " + error.message, 'error');
     } finally {
         if (btn) {
             btn.textContent = originalText;
@@ -169,15 +169,11 @@ window.deletePdf = function (id) {
             renderPdfs();
         } catch (error) {
             console.error('Error deleting PDF', error);
-            alert("Error deleting PDF: " + error.message);
+            uiManager.showAlert("Error deleting PDF: " + error.message, 'error');
         }
     };
 
-    if (typeof showConfirm === 'function') {
-        showConfirm("Are you sure you want to delete this PDF?", doDelete);
-    } else if (confirm("Are you sure you want to delete this PDF?")) {
-        doDelete();
-    }
+    uiManager.showConfirm("Are you sure you want to delete this PDF?", doDelete);
 };
 
 // ==========================================
@@ -323,7 +319,7 @@ window.saveNews = async function (event) {
         renderNews();
     } catch (error) {
         console.error('Error saving news', error);
-        alert("Error saving news: " + error.message);
+        uiManager.showAlert("Error saving news: " + error.message, 'error');
     } finally {
         if (btn) {
             btn.textContent = originalText;
@@ -340,15 +336,11 @@ window.deleteNews = function (id) {
             renderNews();
         } catch (error) {
             console.error('Error deleting news', error);
-            alert("Error deleting news: " + error.message);
+            uiManager.showAlert("Error deleting news: " + error.message, 'error');
         }
     };
 
-    if (typeof showConfirm === 'function') {
-        showConfirm("Are you sure you want to delete this article?", doDelete);
-    } else if (confirm("Are you sure you want to delete this article?")) {
-        doDelete();
-    }
+    uiManager.showConfirm("Are you sure you want to delete this article?", doDelete);
 };
 
 // Initialize PDFs and News on section load

@@ -211,13 +211,13 @@ window.handleVideoThumbnailUpload = async function (event) {
         try {
             const compressedBase64 = await resizeImage(file, 800, 0.7);
             if (compressedBase64.length > 1000000) {
-                alert("Image is still too large. Please pick a smaller image or use an external URL.");
+                uiManager.showAlert("Image is still too large. Please pick a smaller image or use an external URL.", 'error');
                 return;
             }
             document.getElementById('videoThumbnailData').value = compressedBase64;
         } catch (e) {
             console.error(e);
-            alert("Error processing image");
+            uiManager.showAlert("Error processing image", 'error');
         }
     }
 };
@@ -243,7 +243,7 @@ window.handleAudioCoverUpload = async function (event) {
         try {
             const compressedBase64 = await resizeImage(file, 800, 0.7);
             if (compressedBase64.length > 1000000) {
-                alert("Image is still too large. Please pick a smaller image or use an external URL.");
+                uiManager.showAlert("Image is still too large. Please pick a smaller image or use an external URL.", 'error');
                 return;
             }
             document.getElementById('audioCoverData').value = compressedBase64;
@@ -393,7 +393,7 @@ window.saveVideo = async function (event) {
         renderVideos();
     } catch (error) {
         console.error("Error saving video: ", error);
-        alert("Error saving video: " + error.message);
+        uiManager.showAlert("Error saving video: " + error.message, 'error');
     } finally {
         if (btn) {
             btn.textContent = originalText;
@@ -409,17 +409,11 @@ window.deleteVideo = function (id) {
             renderVideos();
         } catch (error) {
             console.error("Error deleting video: ", error);
-            alert("Error deleting video: " + error.message);
+            uiManager.showAlert("Error deleting video: " + error.message, 'error');
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm('Are you sure you want to delete this video?', doDelete);
-    } else {
-        if (confirm('Are you sure you want to delete this video?')) {
-            doDelete();
-        }
-    }
+    uiManager.showConfirm('Are you sure you want to delete this video?', doDelete);
 }
 
 
@@ -558,7 +552,7 @@ window.saveAudio = async function (event) {
         renderAudios();
     } catch (error) {
         console.error("Error saving audio: ", error);
-        alert("Error saving audio: " + error.message);
+        uiManager.showAlert("Error saving audio: " + error.message, 'error');
     } finally {
         if (btn) {
             btn.textContent = originalText;
@@ -574,15 +568,9 @@ window.deleteAudio = function (id) {
             renderAudios();
         } catch (error) {
             console.error("Error deleting audio: ", error);
-            alert("Error deleting audio: " + error.message);
+            uiManager.showAlert("Error deleting audio: " + error.message, 'error');
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm('Are you sure you want to delete this audio track?', doDelete);
-    } else {
-        if (confirm('Are you sure you want to delete this audio track?')) {
-            doDelete();
-        }
-    }
+    uiManager.showConfirm('Are you sure you want to delete this audio track?', doDelete);
 }

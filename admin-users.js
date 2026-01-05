@@ -112,13 +112,13 @@ window.saveUser = async function (event) {
         } else {
             user.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             await db.collection('users').add(user);
-            alert("User record created.");
+            uiManager.showAlert("User record created.", 'success');
         }
         hideUserForm();
         renderUsers();
     } catch (e) {
         console.error(e);
-        alert("Error saving user: " + e.message);
+        uiManager.showAlert("Error saving user: " + e.message, 'error');
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -133,17 +133,11 @@ window.deleteUser = function (id) {
             renderUsers();
         } catch (error) {
             console.error("Error deleting user:", error);
-            alert("Error: " + error.message);
+            uiManager.showAlert("Error: " + error.message, 'error');
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm('Are you sure you want to delete this user metadata?', doDelete);
-    } else {
-        if (confirm('Are you sure you want to delete this user metadata?')) {
-            doDelete();
-        }
-    }
+    uiManager.showConfirm('Are you sure you want to delete this user metadata?', doDelete);
 }
 
 // Initialize users on section load

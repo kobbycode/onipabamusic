@@ -1,3 +1,5 @@
+import { uiManager } from './ui-manager.js';
+
 export class AuthManager {
     constructor() {
         if (AuthManager.instance) {
@@ -40,7 +42,7 @@ export class AuthManager {
                     // Fetch Role
                     const doc = await this.db.collection('users').doc(user.uid).get();
                     if (doc.exists) {
-                        this.userRole = doc.data().role;
+                        this.userRole = (doc.data().role || 'member').toLowerCase();
                         console.log('[AuthManager] Role Fetched:', this.userRole);
                     } else {
                         console.warn('[AuthManager] No user profile found.');
@@ -96,6 +98,8 @@ export class AuthManager {
             // Not logged in: Redirect AWAY from protected pages
             if (isDashboard || isProfilePage) {
                 console.warn('[AuthManager] Protected page access denied. Redirecting to login.');
+                // Save intended destination
+                sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
                 window.location.href = 'login.html';
             }
         }
@@ -103,10 +107,23 @@ export class AuthManager {
 
     redirectBasedOnRole() {
         console.log('[AuthManager] Redirecting based on role:', this.userRole);
+
+        const intendedPath = sessionStorage.getItem('redirectAfterLogin');
+        sessionStorage.removeItem('redirectAfterLogin');
+
         if (this.userRole === 'admin' || this.userRole === 'superadmin') {
-            window.location.href = 'dashboard.html';
+            if (intendedPath && (intendedPath.includes('dashboard.html') || intendedPath.includes('chat.html') || intendedPath.includes('/admin'))) {
+                window.location.href = intendedPath;
+            } else {
+                window.location.href = 'dashboard.html';
+            }
         } else {
-            window.location.href = 'profile.html';
+            // Member/Default
+            if (intendedPath && intendedPath.includes('profile.html')) {
+                window.location.href = intendedPath;
+            } else {
+                window.location.href = 'profile.html';
+            }
         }
     }
 
@@ -197,13 +214,8 @@ export class AuthManager {
     }
 
     showError(title, message) {
-        // Prefer a custom modal if available, fallback to alert
-        if (window.showCustomAlert) {
-            // Assuming a custom alert function exists or we create one
-            alert(`${title}\n\n${message}`);
-        } else {
-            alert(`${title}\n\n${message}`);
-        }
+        // Use global uiManager logic
+        uiManager.showAlert(`${title}: ${message}`, 'error');
     }
 
     /**

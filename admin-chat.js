@@ -174,10 +174,10 @@ window.saveChannel = async function (event) {
 
         hideChannelForm();
         renderChannels();
-        alert(`Channel #${name} saved successfully!`);
+        uiManager.showAlert(`Channel #${name} saved successfully!`, 'success');
     } catch (error) {
         console.error("Error saving channel:", error);
-        alert("Failed to save channel: " + error.message);
+        uiManager.showAlert("Failed to save channel: " + error.message, 'error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalBtnText;
@@ -192,17 +192,11 @@ window.deleteChannel = async function (id) {
             renderChannels();
         } catch (error) {
             console.error("Error deleting channel:", error);
-            alert("Error: " + error.message);
+            uiManager.showAlert("Error: " + error.message, 'error');
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm(`Are you sure you want to delete the #${id} channel? All messages will remain in history but the channel will be removed from navigation.`, doDelete);
-    } else {
-        if (confirm(`Delete #${id} channel?`)) {
-            doDelete();
-        }
-    }
+    uiManager.showConfirm(`Are you sure you want to delete the #${id} channel? All messages will remain in history but the channel will be removed from navigation.`, doDelete);
 }
 
 // Switch Tabs
@@ -276,13 +270,9 @@ window.toggleBlockUser = async function (uid, currentlyBlocked) {
             renderModeration();
         } catch (error) {
             console.error(`Error ${action}ing user:`, error);
-            alert(`Failed to ${action} user.`);
+            uiManager.showAlert(`Failed to ${action} user.`, 'error');
         }
     };
 
-    if (window.showConfirm) {
-        window.showConfirm(`Are you sure you want to ${action} this user? ${!currentlyBlocked ? 'They will no longer be able to send messages.' : 'They will regain chat access.'}`, doToggle);
-    } else {
-        if (confirm(`Confirm ${action}?`)) doToggle();
-    }
+    uiManager.showConfirm(`Are you sure you want to ${action} this user? ${!currentlyBlocked ? 'They will no longer be able to send messages.' : 'They will regain chat access.'}`, doToggle);
 }

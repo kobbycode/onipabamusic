@@ -1,3 +1,5 @@
+import { uiManager } from './ui-manager.js';
+
 // ==========================================
 // SMOOTH SCROLL BEHAVIOR
 // ==========================================
@@ -160,7 +162,7 @@ document.addEventListener('click', (e) => {
 // Load and Play Track
 function loadTrack(src, title, artist, cover) {
     if (!src) {
-        alert('Audio source not available.');
+        uiManager.showAlert('Audio source not available.', 'error');
         return;
     }
 

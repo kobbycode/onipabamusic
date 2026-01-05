@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const channelName = document.getElementById('activeChannelName').textContent;
                 const channelStatus = document.getElementById('activeChannelStatus').textContent;
                 // Simple alert for now, could be a modal later
-                alert(`Channel: ${channelName}\nTopic: ${channelStatus || 'General Discussion'}`);
+                uiManager.showAlert(`Channel: ${channelName}\nTopic: ${channelStatus || 'General Discussion'}`, 'info');
                 optionsMenu.classList.remove('active');
             });
         }
@@ -265,10 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Action: Clear View (Local)
         if (menuClear) {
             menuClear.addEventListener('click', () => {
-                const confirmClear = confirm('This will clear messages from your view only. They will reload next time you refresh. Continue?');
-                if (confirmClear) {
+                uiManager.showConfirm('This will clear messages from your view only. They will reload next time you refresh. Continue?', () => {
                     document.getElementById('chatMessages').innerHTML = '<div class="wa-system-message"><span>Messages cleared from view.</span></div>';
-                }
+                });
                 optionsMenu.classList.remove('active');
             });
         }
@@ -306,27 +305,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Let's check navigation: <a href="index.html">Home</a>... <a href="login.html">Login</a>
                 // There is no explicit profile page in the nav provided in chat.html view.
                 // Using a safe fallback.
-                alert('Profile feature coming soon!');
+                uiManager.showAlert('Profile feature coming soon!', 'info');
             });
         }
 
         // Action: Settings
         if (sidebarSettings) {
             sidebarSettings.addEventListener('click', () => {
-                alert('Settings coming soon!');
+                uiManager.showAlert('Settings coming soon!', 'info');
             });
         }
 
         // Action: Logout
         if (sidebarLogout) {
             sidebarLogout.addEventListener('click', () => {
-                if (confirm('Are you sure you want to log out?')) {
+                uiManager.showConfirm('Are you sure you want to log out?', () => {
                     firebase.auth().signOut().then(() => {
                         window.location.href = 'login.html';
                     }).catch((error) => {
                         console.error('Logout error:', error);
                     });
-                }
+                });
             });
         }
     }
@@ -581,7 +580,7 @@ async function handleSendMessage(e) {
     if (!text) return;
 
     if (!user) {
-        alert("Please login to join the chat!");
+        uiManager.showAlert("Please login to join the chat!", 'error');
         window.location.href = 'login.html';
         return;
     }
@@ -592,7 +591,7 @@ async function handleSendMessage(e) {
         const userData = userDoc.data();
 
         if (userData && userData.isBlocked) {
-            alert("Your account has been blocked from the chat by an administrator.");
+            uiManager.showAlert("Your account has been blocked from the chat by an administrator.", 'error');
             return;
         }
 
@@ -614,7 +613,7 @@ async function handleSendMessage(e) {
         input.value = '';
     } catch (error) {
         console.error("Error sending message:", error);
-        alert("Failed to send message. Please try again.");
+        uiManager.showAlert("Failed to send message. Please try again.", 'error');
     }
 }
 
@@ -622,7 +621,7 @@ async function handleSendMessage(e) {
 async function toggleReaction(messageId, emoji) {
     const user = firebase.auth().currentUser;
     if (!user) {
-        alert("Please login to react!");
+        uiManager.showAlert("Please login to react!", 'error');
         return;
     }
 
@@ -687,7 +686,7 @@ function showEmojiPicker(event, messageId) {
 async function deleteMessage(messageId) {
     if (!isAdmin) return;
 
-    showConfirm("Are you sure you want to delete this message?", async () => {
+    uiManager.showConfirm("Are you sure you want to delete this message?", async () => {
         try {
             await firebase.firestore().collection('chats')
                 .doc(currentChannel)
@@ -708,14 +707,14 @@ async function handleFileUpload(event) {
 
     const user = firebase.auth().currentUser;
     if (!user) {
-        alert("Please sign in to send files.");
+        uiManager.showAlert("Please sign in to send files.", 'error');
         return;
     }
 
     // Check if user is blocked
     const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
     if (userDoc.exists && userDoc.data().isBlocked) {
-        alert("You are blocked from sending messages.");
+        uiManager.showAlert("You are blocked from sending messages.", 'error');
         event.target.value = '';
         return;
     }
@@ -729,7 +728,7 @@ async function handleFileUpload(event) {
             const maxSize = 100 * 1024 * 1024; // 100MB limit
 
             if (file.size > maxSize) {
-                alert(`File "${file.name}" is too large. Maximum size is 100MB.`);
+                uiManager.showAlert(`File "${file.name}" is too large. Maximum size is 100MB.`, 'error');
                 continue;
             }
 
@@ -774,7 +773,7 @@ async function handleFileUpload(event) {
                 },
                 (error) => {
                     console.error("Upload error:", error);
-                    alert(`Failed to upload ${file.name}: ${error.message}`);
+                    uiManager.showAlert(`Failed to upload ${file.name}: ${error.message}`, 'error');
                     messageInput.placeholder = originalPlaceholder;
                     messageInput.disabled = false;
                 },
@@ -806,7 +805,7 @@ async function handleFileUpload(event) {
 
                     } catch (err) {
                         console.error("Post-upload error:", err);
-                        alert(`Error after upload: ${err.message}`);
+                        uiManager.showAlert(`Error after upload: ${err.message}`, 'error');
                         messageInput.placeholder = originalPlaceholder;
                         messageInput.disabled = false;
                     }
@@ -815,7 +814,7 @@ async function handleFileUpload(event) {
         }
     } catch (error) {
         console.error("File upload error:", error);
-        alert("Failed to upload file: " + error.message);
+        uiManager.showAlert("Failed to upload file: " + error.message, 'error');
         messageInput.placeholder = originalPlaceholder;
         messageInput.disabled = false;
     }

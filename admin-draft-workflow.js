@@ -42,7 +42,7 @@
         renderVideos();
 
         if (isNew && !isSuperAdmin()) {
-            alert('Video saved as draft. It will be visible after super admin approval.');
+            uiManager.showAlert('Video saved as draft. It will be visible after super admin approval.');
         }
     };
 
@@ -77,7 +77,7 @@
         renderAudios();
 
         if (isNew && !isSuperAdmin()) {
-            alert('Audio saved as draft. It will be visible after super admin approval.');
+            uiManager.showAlert('Audio saved as draft. It will be visible after super admin approval.');
         }
     };
 
@@ -112,7 +112,7 @@
         renderPdfs();
 
         if (isNew && !isSuperAdmin()) {
-            alert('PDF saved as draft. It will be visible after super admin approval.');
+            uiManager.showAlert('PDF saved as draft. It will be visible after super admin approval.');
         }
     };
 
@@ -293,7 +293,7 @@
 // Approve Pdf (Super Admin only)
 function approvePdf(index) {
     if (!isSuperAdmin()) {
-        alert('Only super admins can approve content');
+        uiManager.showAlert('Only super admins can approve content', 'error');
         return;
     }
 
@@ -304,7 +304,7 @@ function approvePdf(index) {
 
     updateContentItem('pdfs', index, pdf);
     renderPdfs();
-    alert('PDF approved and published successfully!');
+    uiManager.showAlert('PDF approved and published successfully!', 'success');
 }
 
 // Check original overrides again
@@ -315,7 +315,7 @@ function approvePdf(index) {
     const originalDeletePdf = window.deletePdf;
     window.deletePdf = function (index) {
         if (!isSuperAdmin()) {
-            alert('Only super admins can delete content');
+            uiManager.showAlert('Only super admins can delete content', 'error');
             return;
         }
 
@@ -327,15 +327,15 @@ function approvePdf(index) {
         if (window.showConfirm) {
             window.showConfirm('Are you sure you want to delete this PDF?', performDelete);
         } else {
-            if (confirm('Are you sure you want to delete this PDF?')) {
+            uiManager.showConfirm('Are you sure you want to delete this PDF?', async () => {
                 performDelete();
-            }
+            });
         }
     };
 })();
 function approveVideo(index) {
     if (!isSuperAdmin()) {
-        alert('Only super admins can approve content');
+        uiManager.showAlert('Only super admins can approve content', 'error');
         return;
     }
 
@@ -346,13 +346,13 @@ function approveVideo(index) {
 
     updateContentItem('videos', index, video);
     renderVideos();
-    alert('Video approved and published successfully!');
+    uiManager.showAlert('Video approved and published successfully!', 'success');
 }
 
 // Approve Audio (Super Admin only)
 function approveAudio(index) {
     if (!isSuperAdmin()) {
-        alert('Only super admins can approve content');
+        uiManager.showAlert('Only super admins can approve content', 'error');
         return;
     }
 
@@ -363,7 +363,7 @@ function approveAudio(index) {
 
     updateContentItem('audios', index, audio);
     renderAudios();
-    alert('Audio approved and published successfully!');
+    uiManager.showAlert('Audio approved and published successfully!', 'success');
 }
 
 // Override delete functions to add permission check
@@ -373,7 +373,7 @@ function approveAudio(index) {
 
     window.deleteVideo = function (index) {
         if (!isSuperAdmin()) {
-            alert('Only super admins can delete content');
+            uiManager.showAlert('Only super admins can delete content', 'error');
             return;
         }
 
@@ -385,15 +385,15 @@ function approveAudio(index) {
         if (window.showConfirm) {
             window.showConfirm('Are you sure you want to delete this video?', performDelete);
         } else {
-            if (confirm('Are you sure you want to delete this video?')) {
+            uiManager.showConfirm('Are you sure you want to delete this video?', async () => {
                 performDelete();
-            }
+            });
         }
     };
 
     window.deleteAudio = function (index) {
         if (!isSuperAdmin()) {
-            alert('Only super admins can delete content');
+            uiManager.showAlert('Only super admins can delete content', 'error');
             return;
         }
 
@@ -405,9 +405,9 @@ function approveAudio(index) {
         if (window.showConfirm) {
             window.showConfirm('Are you sure you want to delete this audio track?', performDelete);
         } else {
-            if (confirm('Are you sure you want to delete this audio track?')) {
+            uiManager.showConfirm('Are you sure you want to delete this audio track?', async () => {
                 performDelete();
-            }
+            });
         }
     };
 })();

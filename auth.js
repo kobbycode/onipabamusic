@@ -1,4 +1,5 @@
 import { authManager } from './auth-manager.js';
+import { uiManager } from './ui-manager.js';
 
 // ==========================================
 // AUTH MANAGER BRIDGE
@@ -21,7 +22,7 @@ window.handleSignup = function (event) {
     const confirmPassword = document.getElementById('confirm-password').value;
 
     if (password !== confirmPassword) {
-        alert('Passwords do not match');
+        uiManager.showAlert('Passwords do not match', 'error');
         return;
     }
 
@@ -29,9 +30,9 @@ window.handleSignup = function (event) {
 };
 
 window.logout = function () {
-    if (confirm('Are you sure you want to logout?')) {
+    uiManager.showConfirm('Are you sure you want to logout?', () => {
         authManager.logout();
-    }
+    });
 };
 
 // Initial logs
