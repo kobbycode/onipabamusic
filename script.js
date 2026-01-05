@@ -515,13 +515,19 @@ function renderPublicVideos() {
     const container = document.querySelector('.video-grid');
     if (!container) return;
 
+    // Don't render videos on dedicated player pages
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('audio-player.html') || currentPath.includes('news-detail.html')) {
+        return;
+    }
+
     if (publicContentData.videos.length === 0) {
         container.innerHTML = '<p class="empty-message">No videos available at the moment.</p>';
         return;
     }
 
     // Limit to 3 on homepage
-    const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+    const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
     const displayVideos = isHomePage ? publicContentData.videos.slice(0, 3) : publicContentData.videos;
 
     container.innerHTML = displayVideos.map((video, index) => `
@@ -590,13 +596,19 @@ function renderPublicNews() {
     const container = document.querySelector('.news-grid');
     if (!container) return;
 
+    // Don't render news on dedicated player pages
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('video-player.html') || currentPath.includes('audio-player.html')) {
+        return;
+    }
+
     if (publicContentData.news.length === 0) {
         container.innerHTML = '<p class="empty-message">No news updates available.</p>';
         return;
     }
 
     // Limit to 3 on homepage
-    const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+    const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
     const displayNews = isHomePage ? publicContentData.news.slice(0, 3) : publicContentData.news;
 
     container.innerHTML = displayNews.map(item => `
@@ -623,13 +635,19 @@ function renderPublicAudios() {
     const container = document.querySelector('.audio-grid');
     if (!container) return;
 
+    // Don't render audios on dedicated player pages
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('video-player.html') || currentPath.includes('news-detail.html')) {
+        return;
+    }
+
     if (publicContentData.audios.length === 0) {
         container.innerHTML = '<p class="empty-message">No audio tracks available.</p>';
         return;
     }
 
     // Limit to 4 on homepage
-    const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+    const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
     const displayAudios = isHomePage ? publicContentData.audios.slice(0, 4) : publicContentData.audios;
 
     container.innerHTML = displayAudios.map((audio, index) => `
@@ -658,13 +676,19 @@ function renderPublicPDFs() {
     const container = document.querySelector('.pdf-grid');
     if (!container) return;
 
+    // Don't render PDFs on dedicated player pages
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('video-player.html') || currentPath.includes('audio-player.html') || currentPath.includes('news-detail.html')) {
+        return;
+    }
+
     if (publicContentData.pdfs.length === 0) {
         container.innerHTML = '<p class="empty-message">No sheet music available.</p>';
         return;
     }
 
     // Limit to 4 on homepage
-    const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+    const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
     const displayPdfs = isHomePage ? publicContentData.pdfs.slice(0, 4) : publicContentData.pdfs;
 
     container.innerHTML = displayPdfs.map(pdf => `
