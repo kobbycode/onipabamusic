@@ -533,8 +533,25 @@ function renderPublicVideos() {
         return;
     }
 
-    if (publicContentData.videos.length === 0) {
-        container.innerHTML = '<p class="empty-message">No videos available at the moment.</p>';
+    // Show skeleton loaders while data is loading
+    if (!publicContentData.videos || publicContentData.videos.length === 0) {
+        // Check if we're still loading (no data yet) vs truly empty
+        if (!window.publicContentData || window.publicContentData.videos === undefined) {
+            container.innerHTML = Array(3).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-thumbnail"></div>
+                    <div class="skeleton-info">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text skeleton-text-short"></div>
+                    </div>
+                </div>
+            `).join('');
+            return;
+        }
+
+        // Data loaded but empty
+        container.innerHTML = '<div class="empty-state"><p class="empty-message">No videos available at the moment.</p></div>';
         return;
     }
 
@@ -543,7 +560,7 @@ function renderPublicVideos() {
     const displayVideos = isHomePage ? publicContentData.videos.slice(0, 3) : publicContentData.videos;
 
     container.innerHTML = displayVideos.map((video, index) => `
-        <article class="video-card" data-index="${index}">
+        <article class="video-card fade-in" data-index="${index}">
             <div class="video-thumbnail-wrapper" style="position: relative; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <img src="${video.thumbnail || 'images/logo-placeholder.png'}" alt="${video.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" onerror="this.src='images/logo-placeholder.png'">
                 <!-- Play Overlay -->
