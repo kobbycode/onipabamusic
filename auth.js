@@ -41,6 +41,7 @@ function handleLogin(event) {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.error('Login error:', errorCode, errorMessage);
+            alert('Login Error: ' + errorMessage); // DEBUG ALERT
 
             // Show error
             const errorMsg = document.getElementById('errorMessage');
