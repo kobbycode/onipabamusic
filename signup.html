@@ -8,15 +8,131 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+
     <!-- Firebase SDKs (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
     <script type="module" src="firebase-config.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            font-family: var(--font-body);
+        }
+
+        .signup-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+        }
+
+        .signup-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .signup-header h1 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-gold-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-header p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            color: var(--color-text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            padding: 0.875rem;
+            background: var(--color-bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--color-text-primary);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            transition: var(--transition-fast);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--color-gold-primary);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .signup-btn {
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--color-gold-primary) 0%, #c9a959 100%);
+            border: none;
+            border-radius: 6px;
+            color: var(--color-bg-primary);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .signup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+        }
+
+        .signup-btn:active {
+            transform: translateY(0);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-link a {
+            color: var(--color-gold-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .back-link a:hover {
+            color: var(--color-gold-secondary);
+        }
+    </style>
 </head>
 
 <body>
@@ -25,82 +141,48 @@
         <div class="auth-loader-spinner"></div>
         <div class="auth-loader-text">Verifying Session...</div>
     </div>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <a href="index.html">
-                        <img src="images/logo-v2.jpg" alt="Onipaba Music">
-                    </a>
-                </div>
-                <nav class="nav">
-                    <a href="index.html" class="nav-link">Home</a>
-                    <a href="about.html" class="nav-link">About</a>
-                    <a href="videos.html" class="nav-link">Videos</a>
-                    <a href="audios.html" class="nav-link">Audios</a>
-                    <a href="pdfs.html" class="nav-link">PDFs</a>
-                    <a href="news.html" class="nav-link">News</a>
-                    <a href="contact.html" class="nav-link">Contact</a>
-                    <a href="chat.html" class="nav-link">Chat</a>
-                </nav>
-                <div class="header-actions">
-                    <button class="search-trigger" id="searchTrigger" aria-label="Open Search">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
-                </div>
-                <button class="mobile-menu-toggle" aria-label="Toggle menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </div>
-    </header>
 
     <div class="signup-container">
-        <div class="auth-card">
-            <h2 class="auth-title">Create Account</h2>
-            <p class="auth-subtitle">Join our community today</p>
+        <div class="signup-card">
+            <div class="signup-header">
+                <img src="images/logo-v2.jpg" alt="Onipaba Music"
+                    style="height: 80px; width: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 0.5rem;">
+                <h1>Create Account</h1>
+                <p>Join our community today</p>
+            </div>
 
-            <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+            <form class="signup-form" id="signupForm" onsubmit="handleSignup(event)">
                 <div class="form-group">
                     <label for="name">Full Name</label>
-                    <input type="text" id="name" class="auth-input" placeholder="Your full name" required>
+                    <input type="text" id="name" required placeholder="Your full name" autocomplete="name">
                 </div>
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" class="auth-input" placeholder="Enter your email" required>
+                    <input type="email" id="email" required placeholder="Enter your email" autocomplete="email">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" class="auth-input" placeholder="Create a password" required>
+                    <input type="password" id="password" required placeholder="Create a password" minlength="6"
+                        autocomplete="new-password">
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Confirm Password</label>
-                    <input type="password" id="confirm-password" class="auth-input" placeholder="Confirm your password"
-                        required>
+                    <input type="password" id="confirm-password" required placeholder="Confirm your password"
+                        minlength="6" autocomplete="new-password">
                 </div>
 
-                <button type="submit" class="auth-btn">Sign Up</button>
+                <button type="submit" class="signup-btn">Sign Up</button>
             </form>
 
-            <div class="auth-divider">
-                <span>OR</span>
+            <div class="back-link">
+                <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">Already have an account? <a
+                        href="login.html">Sign In</a></p>
+                <a href="index.html">← Back to website</a>
             </div>
-
-            <p class="auth-redirect">
-                Already have an account? <a href="login.html">Sign In</a>
-            </p>
         </div>
     </div>
 
     <script type="module" src="auth.js"></script>
-    <script type="module" src="script.js"></script>
 </body>
 
 </html>
