@@ -90,6 +90,11 @@ export class AuthManager {
         this.initCallbacks.forEach(cb => cb(this.user));
         this.initCallbacks = [];
 
+        // Update UI if authenticated
+        if (isAuthenticated) {
+            this.updateUI();
+        }
+
         // Handle page protection
         this.enforceProtection(isAuthenticated);
     }
