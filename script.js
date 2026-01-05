@@ -458,13 +458,16 @@ let publicContentData = {
 
 // Load content from Firestore (Public)
 async function loadPublicContent() {
-    if (typeof db === 'undefined') {
-        console.warn('Firestore (db) is not initialized. Skipping content load.');
+    if (typeof db === 'undefined' || !db) {
+        console.error('❌ Firestore (db) is not initialized! Cannot load content.');
+        updateUIMessage('.video-grid', 'Error: Database connection failed.');
+        updateUIMessage('.news-grid', 'Error: Database connection failed.');
+        updateUIMessage('.audio-grid', 'Error: Database connection failed.');
+        updateUIMessage('.pdf-grid', 'Error: Database connection failed.');
         return;
     }
-    console.log('Loading public content from Firestore...');
+    console.log('🚀 Loading public content from Firestore...');
 
-    // Initialize empty if not present
     window.publicContentData = {
         videos: [],
         news: [],
@@ -472,43 +475,46 @@ async function loadPublicContent() {
         pdfs: []
     };
 
-    try {
-        // Parallel fetch
-        const [videosSnap, newsSnap, audiosSnap, pdfsSnap] = await Promise.all([
-            db.collection('videos').orderBy('createdAt', 'desc').get(),
-            db.collection('news').orderBy('date', 'desc').get(),
-            db.collection('audios').orderBy('createdAt', 'desc').get(),
-            db.collection('pdfs').orderBy('createdAt', 'desc').get()
-        ]);
+    const collections = ['videos', 'news', 'audios', 'pdfs'];
+    const orderFields = {
+        videos: 'createdAt',
+        news: 'date',
+        audios: 'createdAt',
+        pdfs: 'createdAt'
+    };
 
-        publicContentData.videos = videosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        publicContentData.news = newsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        publicContentData.audios = audiosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        publicContentData.pdfs = pdfsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        renderPublicVideos();
-        renderPublicNews();
-        renderPublicAudios();
-        renderPublicPDFs();
-        updateSearchIndex();
-
-        // Init News Detail if on that page
-        if (document.getElementById('news-detail-content')) {
-            initNewsDetail();
+    // Use individual fetchers to isolate errors
+    const fetchCollection = async (collName) => {
+        try {
+            console.log(`Fetching ${collName}...`);
+            const snap = await db.collection(collName).orderBy(orderFields[collName], 'desc').get();
+            console.log(`✅ ${collName} fetched: ${snap.size} items`);
+            publicContentData[collName] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (err) {
+            console.error(`❌ Error fetching ${collName}:`, err);
+            updateUIMessage(`.${collName.slice(0, -1)}-grid`, `Error loading ${collName}.`);
         }
+    };
 
-        // Init Video Player if on that page
-        if (document.getElementById('video-player-content')) {
-            initVideoPlayer();
-        }
+    await Promise.all(collections.map(fetchCollection));
 
-        // Init Audio Player if on that page
-        if (document.getElementById('audio-player-content')) {
-            initAudioPlayer();
-        }
+    // Render results
+    renderPublicVideos();
+    renderPublicNews();
+    renderPublicAudios();
+    renderPublicPDFs();
+    updateSearchIndex();
 
-    } catch (error) {
-        console.error("Error loading public content:", error);
+    // Init page-specific components
+    if (document.getElementById('news-detail-content')) initNewsDetail();
+    if (document.getElementById('video-player-content')) initVideoPlayer();
+    if (document.getElementById('audio-player-content')) initAudioPlayer();
+}
+
+function updateUIMessage(selector, message) {
+    const container = document.querySelector(selector);
+    if (container) {
+        container.innerHTML = `<p class="error-message">${message}</p>`;
     }
 }
 
