@@ -459,11 +459,18 @@ let publicContentData = {
 // Load content from Firestore (Public)
 async function loadPublicContent() {
     if (typeof db === 'undefined' || !db) {
-        console.error('❌ Firestore (db) is not initialized! Cannot load content.');
-        updateUIMessage('.video-grid', 'Error: Database connection failed.');
-        updateUIMessage('.news-grid', 'Error: Database connection failed.');
-        updateUIMessage('.audio-grid', 'Error: Database connection failed.');
-        updateUIMessage('.pdf-grid', 'Error: Database connection failed.');
+        logError('loadPublicContent', 'Firestore not initialized', {
+            dbType: typeof db,
+            dbValue: db
+        });
+
+        // Show error in all content sections
+        ['.video-grid', '.news-grid', '.audio-grid', '.pdf-grid'].forEach(selector => {
+            showError(selector, 'Database connection failed. Please refresh the page.', {
+                retryFn: 'location.reload',
+                type: 'error'
+            });
+        });
         return;
     }
     console.log('🚀 Loading public content from Firestore...');
@@ -483,6 +490,7 @@ async function loadPublicContent() {
         pdfs: 'createdAt'
     };
 
+
     // Use individual fetchers to isolate errors
     const fetchCollection = async (collName) => {
         try {
@@ -491,8 +499,19 @@ async function loadPublicContent() {
             console.log(`✅ ${collName} fetched: ${snap.size} items`);
             publicContentData[collName] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (err) {
-            console.error(`❌ Error fetching ${collName}:`, err);
-            updateUIMessage(`.${collName.slice(0, -1)}-grid`, `Error loading ${collName}.`);
+            // Enhanced error logging with context
+            logError(`loadPublicContent/${collName}`, err, {
+                collection: collName,
+                orderField: orderFields[collName],
+                dbInitialized: typeof db !== 'undefined'
+            });
+
+            // User-friendly error display with retry option
+            const gridSelector = `.${collName.slice(0, -1)}-grid`;
+            showError(gridSelector, `Unable to load ${collName}. Please check your connection and try again.`, {
+                retryFn: 'loadPublicContent',
+                type: 'error'
+            });
         }
     };
 
@@ -511,10 +530,63 @@ async function loadPublicContent() {
     if (document.getElementById('audio-player-content')) initAudioPlayer();
 }
 
+// ==========================================
+// ERROR HANDLING UTILITIES
+// ==========================================
+
+/**
+ * Display a user-friendly error message in a container
+ * @param {string} selector - CSS selector for the container
+ * @param {string} message - User-friendly error message
+ * @param {Object} options - Additional options (retryFn, details, type)
+ */
+function showError(selector, message, options = {}) {
+    const container = document.querySelector(selector);
+    if (!container) return;
+
+    const { retryFn, details, type = 'error' } = options;
+
+    const errorHTML = `
+        <div class="error-container">
+            <div class="${type}-card">
+                <div class="${type}-icon">${type === 'error' ? '⚠️' : '⚡'}</div>
+                <div class="${type}-title">${type === 'error' ? 'Oops! Something went wrong' : 'Connection Issue'}</div>
+                <div class="${type}-message">${message}</div>
+                ${details ? `<div class="error-details">${details}</div>` : ''}
+                ${retryFn ? '<button class="retry-btn" onclick="' + retryFn + '()">🔄 Try Again</button>' : ''}
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = errorHTML;
+}
+
+/**
+ * Enhanced error logging with context
+ * @param {string} context - Where the error occurred
+ * @param {Error|string} error - The error object or message
+ * @param {Object} additionalInfo - Any additional context
+ */
+function logError(context, error, additionalInfo = {}) {
+    const timestamp = new Date().toISOString();
+    const errorMessage = error.message || error.toString();
+
+    console.group(`❌ [${context}] Error at ${timestamp}`);
+    console.error('Message:', errorMessage);
+    if (error.stack) console.error('Stack:', error.stack);
+    if (Object.keys(additionalInfo).length > 0) {
+        console.log('Additional Info:', additionalInfo);
+    }
+    console.groupEnd();
+}
+
+/**
+ * Simple UI message update (for backwards compatibility)
+ */
 function updateUIMessage(selector, message) {
     const container = document.querySelector(selector);
     if (container) {
-        container.innerHTML = `<p class="error-message">${message}</p>`;
+        container.innerHTML = `<p class="empty-message">${message}</p>`;
     }
 }
 
