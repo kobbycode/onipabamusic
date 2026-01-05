@@ -517,7 +517,11 @@ function renderPublicVideos() {
 
     // Don't render videos on dedicated player pages
     const currentPath = window.location.pathname;
-    if (currentPath.includes('audio-player.html') || currentPath.includes('news-detail.html')) {
+    console.log('Current Path:', currentPath);
+
+    // Exact match or includes check for audio player
+    if (currentPath.includes('audio-player') || currentPath.includes('news-detail')) {
+        console.log('Skipping video render on audio/news page');
         return;
     }
 
