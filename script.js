@@ -630,8 +630,23 @@ function renderPublicNews() {
         return;
     }
 
-    if (publicContentData.news.length === 0) {
-        container.innerHTML = '<p class="empty-message">No news updates available.</p>';
+    // Show skeleton loaders while data is loading
+    if (!publicContentData.news || publicContentData.news.length === 0) {
+        if (!window.publicContentData || window.publicContentData.news === undefined) {
+            container.innerHTML = Array(3).fill(0).map(() => `
+                <div class="skeleton-news-card">
+                    <div class="skeleton-news-image"></div>
+                    <div class="skeleton-news-content">
+                        <div class="skeleton-text skeleton-text-short"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text" style="width: 90%;"></div>
+                    </div>
+                </div>
+            `).join('');
+            return;
+        }
+        container.innerHTML = '<div class="empty-state"><p class="empty-message">No news updates available.</p></div>';
         return;
     }
 
@@ -640,7 +655,7 @@ function renderPublicNews() {
     const displayNews = isHomePage ? publicContentData.news.slice(0, 3) : publicContentData.news;
 
     container.innerHTML = displayNews.map(item => `
-        <article class="news-card">
+        <article class="news-card fade-in">
             <img src="${item.image || 'images/logo-placeholder.png'}" alt="${item.title}" class="news-card-image" onerror="this.src='images/logo-placeholder.png'">
             <div class="news-content">
                 <div class="news-date">${item.date}</div>
@@ -669,8 +684,19 @@ function renderPublicAudios() {
         return;
     }
 
-    if (publicContentData.audios.length === 0) {
-        container.innerHTML = '<p class="empty-message">No audio tracks available.</p>';
+    // Show skeleton loaders while data is loading
+    if (!publicContentData.audios || publicContentData.audios.length === 0) {
+        if (!window.publicContentData || window.publicContentData.audios === undefined) {
+            container.innerHTML = Array(4).fill(0).map(() => `
+                <div class="skeleton-audio-card">
+                    <div class="skeleton-audio-cover"></div>
+                    <div class="skeleton-title" style="width: 90%; margin: 0 auto;"></div>
+                    <div class="skeleton-text skeleton-text-short" style="margin: 0.5rem auto 0;"></div>
+                </div>
+            `).join('');
+            return;
+        }
+        container.innerHTML = '<div class="empty-state"><p class="empty-message">No audio tracks available.</p></div>';
         return;
     }
 
@@ -679,7 +705,7 @@ function renderPublicAudios() {
     const displayAudios = isHomePage ? publicContentData.audios.slice(0, 4) : publicContentData.audios;
 
     container.innerHTML = displayAudios.map((audio, index) => `
-        <article class="audio-card" data-index="${index}">
+        <article class="audio-card fade-in" data-index="${index}">
             <div class="audio-cover" style="background-image: url('${audio.cover || 'images/logo-placeholder.png'}');" onerror="this.style.backgroundImage='url(images/logo-placeholder.png)'">
                 <button class="audio-play-btn" 
                         data-audio-title="${audio.title}" 
@@ -710,8 +736,22 @@ function renderPublicPDFs() {
         return;
     }
 
-    if (publicContentData.pdfs.length === 0) {
-        container.innerHTML = '<p class="empty-message">No sheet music available.</p>';
+    // Show skeleton loaders while data is loading
+    if (!publicContentData.pdfs || publicContentData.pdfs.length === 0) {
+        if (!window.publicContentData || window.publicContentData.pdfs === undefined) {
+            container.innerHTML = Array(3).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-thumbnail" style="height: 150px;"></div>
+                    <div class="skeleton-info">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text skeleton-text-short"></div>
+                    </div>
+                </div>
+            `).join('');
+            return;
+        }
+        container.innerHTML = '<div class="empty-state"><p class="empty-message">No sheet music available.</p></div>';
         return;
     }
 
