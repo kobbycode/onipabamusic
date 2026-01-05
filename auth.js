@@ -16,7 +16,11 @@ function handleLogin(event) {
     btn.textContent = 'Signing in...';
     btn.disabled = true;
 
-    firebase.auth().signInWithEmailAndPassword(email, password)
+    // Explicitly set persistence to LOCAL
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(() => {
+            return firebase.auth().signInWithEmailAndPassword(email, password);
+        })
         .then(async (userCredential) => {
             // Signed in
             const user = userCredential.user;
@@ -120,6 +124,8 @@ firebase.auth().onAuthStateChanged((user) => {
     const isDashboard = path.includes('dashboard.html') || path.endsWith('/admin') || path.includes('/admin/');
     const isProfilePage = path.includes('profile.html');
 
+    console.log('[Auth Debug] Path:', path, '| User:', user ? user.email : 'No User', '| isDashboard:', isDashboard);
+
     // Update Header Login Button globally
     updateHeaderAuthUI(user);
 
@@ -127,8 +133,10 @@ firebase.auth().onAuthStateChanged((user) => {
         // User is signed in
         if (isLoginPage || isSignupPage) {
             // Check role for redirect
+            console.log('[Auth Debug] User on Auth Page, checking role...');
             firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
                 const data = doc.data();
+                console.log('[Auth Debug] Role:', data ? data.role : 'None');
                 if (data && data.role === 'admin') {
                     window.location.href = 'dashboard.html';
                 } else {
@@ -150,6 +158,7 @@ firebase.auth().onAuthStateChanged((user) => {
     } else {
         // No user is signed in
         if (isDashboard || isProfilePage) {
+            console.log('[Auth Debug] Protected page accessed without user. Redirecting to Login.');
             window.location.href = 'login.html';
         }
     }
