@@ -139,6 +139,85 @@ export const uiManager = {
                 modal.remove();
             }, 300);
         }
+    },
+
+    // ==========================================
+    // TOAST NOTIFICATIONS
+    // ==========================================
+
+    /**
+     * Show a toast notification (non-intrusive, auto-dismiss)
+     * @param {string} message - The message to display
+     * @param {string} type - Type: 'success', 'error', 'warning', 'info'
+     * @param {number} duration - Duration in ms (default: 3000)
+     */
+    showToast(message, type = 'info', duration = 3000) {
+        // Create toast container if it doesn't exist
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        // Determine icon based on type
+        let icon;
+        switch (type) {
+            case 'success':
+                icon = '✓';
+                break;
+            case 'error':
+                icon = '✕';
+                break;
+            case 'warning':
+                icon = '⚠';
+                break;
+            default:
+                icon = 'ℹ';
+        }
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-message">${message}</div>
+            <button class="toast-close" aria-label="Close">&times;</button>
+        `;
+
+        // Add to container
+        container.appendChild(toast);
+
+        // Trigger animation
+        requestAnimationFrame(() => {
+            toast.classList.add('toast-show');
+        });
+
+        // Close button handler
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.onclick = () => this.removeToast(toast);
+
+        // Auto-dismiss
+        setTimeout(() => {
+            this.removeToast(toast);
+        }, duration);
+
+        return toast;
+    },
+
+    removeToast(toast) {
+        if (!toast) return;
+        toast.classList.remove('toast-show');
+        toast.classList.add('toast-hide');
+        setTimeout(() => {
+            toast.remove();
+            // Remove container if empty
+            const container = document.getElementById('toastContainer');
+            if (container && container.children.length === 0) {
+                container.remove();
+            }
+        }, 300);
     }
 };
 
@@ -150,8 +229,9 @@ window.showAlert = (msg, type) => uiManager.showAlert(msg, type);
 window.showConfirm = (msg, cb) => uiManager.showConfirm(msg, cb);
 window.closeAlert = () => uiManager.closeAlert();
 window.closeConfirm = () => uiManager.closeConfirm();
+window.showToast = (msg, type, duration) => uiManager.showToast(msg, type, duration);
 
 // Override Native Alert
 window.alert = (msg) => uiManager.showAlert(msg, 'info');
 
-console.log('[UIManager] Global Alerts Initialized');
+console.log('[UIManager] Global Alerts & Toasts Initialized');
