@@ -19,6 +19,7 @@ export default defineConfig({
                 signup: resolve(__dirname, 'signup.html'),
                 'video-player': resolve(__dirname, 'video-player.html'),
                 videos: resolve(__dirname, 'videos.html'),
+                'audio-player': resolve(__dirname, 'audio-player.html'),
                 '404': resolve(__dirname, '404.html')
             }
         }
