@@ -158,8 +158,10 @@ firebase.auth().onAuthStateChanged((user) => {
     } else {
         // No user is signed in
         if (isDashboard || isProfilePage) {
-            console.log('[Auth Debug] Protected page accessed without user. Redirecting to Login.');
-            window.location.href = 'login.html';
+            console.log('[Auth Debug] Protected page accessed without user. (Redirect disabled for debugging)');
+            // window.location.href = 'login.html'; // DISABLED FOR DEBUGGING
+            const nameEl = document.getElementById('currentUserName');
+            if (nameEl) nameEl.textContent = "Not Logged In (Debug Mode)";
         }
     }
 });
