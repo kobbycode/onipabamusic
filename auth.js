@@ -27,7 +27,7 @@ function handleLogin(event) {
             const userData = userDoc.data();
 
             if (userData && userData.role === 'admin') {
-                window.location.href = '/admin';
+                window.location.href = 'dashboard.html';
             } else {
                 window.location.href = 'profile.html';
             }
@@ -130,7 +130,7 @@ firebase.auth().onAuthStateChanged((user) => {
             firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
                 const data = doc.data();
                 if (data && data.role === 'admin') {
-                    window.location.href = '/admin';
+                    window.location.href = 'dashboard.html';
                 } else {
                     window.location.href = 'profile.html';
                 }
