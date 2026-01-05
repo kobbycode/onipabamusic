@@ -1,4 +1,4 @@
-﻿/* ==========================================
+/* ==========================================
    CSS CUSTOM PROPERTIES - DESIGN TOKENS
    ========================================== */
 :root {
@@ -552,7 +552,7 @@ body {
 }
 
 .video-thumbnail::after {
-    content: 'â–¶';
+    content: '▶';
     position: absolute;
     font-size: 3rem;
     color: var(--color-gold-primary);
@@ -678,7 +678,7 @@ body {
 
 /* Overlay play button on cover hover */
 .audio-cover::after {
-    content: 'â–¶';
+    content: '▶';
     position: absolute;
     top: 50%;
     left: 50%;
@@ -3750,5 +3750,5 @@ video.msg-media-video {
     color: var(--color-gold-primary);
     transform: scale(1.1);
 }
- 
- 
+
+
