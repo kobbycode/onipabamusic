@@ -39,20 +39,35 @@ export class AuthManager {
             if (user) {
                 this.user = user;
                 try {
-                    // Fetch Role
-                    const doc = await this.db.collection('users').doc(user.uid).get();
+                    // 1. Try UID Lookup (Standard)
+                    let doc = await this.db.collection('users').doc(user.uid).get();
+
                     if (doc.exists) {
                         this.userRole = (doc.data().role || 'member').toLowerCase();
-                        console.log('[AuthManager] Role Fetched:', this.userRole);
+                        console.log('[AuthManager] Role found via UID:', this.userRole);
                     } else {
-                        console.warn('[AuthManager] No user profile found.');
-                        this.userRole = 'member'; // Default
+                        // 2. Fallback: Email Lookup (for manual admin-created accounts)
+                        console.log('[AuthManager] UID lookup failed, trying email fallback...', user.email);
+                        const snapshot = await this.db.collection('users')
+                            .where('email', '==', user.email)
+                            .get();
+
+                        if (!snapshot.empty) {
+                            // If multiple found, prioritize highest role
+                            const roles = snapshot.docs.map(d => (d.data().role || 'member').toLowerCase());
+                            if (roles.includes('superadmin')) this.userRole = 'superadmin';
+                            else if (roles.includes('admin')) this.userRole = 'admin';
+                            else this.userRole = 'member';
+
+                            console.log('[AuthManager] Role found via Email Fallback:', this.userRole);
+                        } else {
+                            console.warn('[AuthManager] No user profile found via UID or Email.');
+                            this.userRole = 'member';
+                        }
                     }
                     this.finishInit(true);
                 } catch (error) {
                     console.error('[AuthManager] Profile Fetch Error:', error);
-                    // If we can't fetch profile (e.g. permission error), we might still be logged in
-                    // But for admin, this is critical.
                     this.showError('Profile Error', 'Could not load user profile. ' + error.message);
                     this.finishInit(false);
                 }
