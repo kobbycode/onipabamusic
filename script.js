@@ -54,6 +54,8 @@ function highlightActiveNav() {
             link.classList.add('active');
         } else if (href === 'news.html' && currentPath.includes('news-detail.html')) {
             link.classList.add('active');
+        } else if (href === 'audios.html' && currentPath.includes('audio-player.html')) {
+            link.classList.add('active');
         }
     });
 }
@@ -141,16 +143,17 @@ const durationEl = document.getElementById('duration');
 // Handle Audio Card Clicks using delegation
 document.addEventListener('click', (e) => {
     const playBtn = e.target.closest('.audio-play-btn');
-    if (playBtn) {
-        const title = playBtn.dataset.audioTitle;
-        const artist = playBtn.dataset.audioArtist;
-        const src = playBtn.dataset.audioSrc;
-        const cover = playBtn.dataset.audioCover;
-        const index = parseInt(playBtn.dataset.index);
+    const audioCard = e.target.closest('.audio-card');
 
-        currentTrackIndex = index;
-        loadTrack(src, title, artist, cover);
-        return;
+    if (playBtn || audioCard) {
+        const target = playBtn || audioCard;
+        const index = target.dataset.index;
+
+        if (index !== undefined && publicContentData.audios[index]) {
+            const audio = publicContentData.audios[index];
+            // Navigate to audio player page
+            window.location.href = `audio-player.html?id=${audio.id || index}`;
+        }
     }
 });
 
@@ -495,6 +498,11 @@ async function loadPublicContent() {
         // Init Video Player if on that page
         if (document.getElementById('video-player-content')) {
             initVideoPlayer();
+        }
+
+        // Init Audio Player if on that page
+        if (document.getElementById('audio-player-content')) {
+            initAudioPlayer();
         }
 
     } catch (error) {
@@ -865,9 +873,194 @@ window.initNewsDetail = function () {
             </div>
         `;
     } else {
-        container.innerHTML = '<p>Article not found.</p>';
+        container.innerHTML = '<p class="error-message">Article not found.</p>';
     }
 };
+
+window.initAudioPlayer = function () {
+    const container = document.getElementById('audio-player-content');
+    if (!container) return; // Not on player page
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    if (!id) {
+        container.innerHTML = '<p class="error-message">Audio track not specified.</p>';
+        return;
+    }
+
+    // Find audio by ID or Index (fallback)
+    let audio = publicContentData.audios.find(a => a.id == id);
+    if (!audio && !isNaN(id) && publicContentData.audios[id]) {
+        audio = publicContentData.audios[id];
+    }
+
+    if (audio) {
+        const url = audio.url || '';
+        const cover = audio.cover || 'images/logo-placeholder.png';
+        const artist = audio.artist || audio.composedBy || 'John Onipaba';
+
+        container.innerHTML = `
+            <div class="audio-player-layout">
+                <div class="audio-visual-section">
+                    <div class="audio-main-cover">
+                        <img src="${cover}" alt="${audio.title}" class="player-cover-img" onerror="this.src='images/logo-placeholder.png'">
+                        <div class="playback-ring"></div>
+                    </div>
+                </div>
+                
+                <div class="audio-info-container">
+                    <div class="audio-header-section">
+                        <h1 class="audio-player-title">${audio.title}</h1>
+                        <p class="audio-player-subtitle">${artist}</p>
+                        
+                        <div class="audio-player-meta">
+                            <div class="meta-item">
+                                <strong>Category</strong>
+                                <span>${audio.category || 'Choral'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <strong>Duration</strong>
+                                <span>${audio.duration || '--:--'}</span>
+                            </div>
+                            ${audio.date ? `
+                            <div class="meta-item">
+                                <strong>Release Date</strong>
+                                <span>${audio.date}</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="custom-audio-player" id="mainAudioPlayer">
+                        <div class="player-controls-main">
+                            <button class="control-btn" id="mainPrev"><span class="material-icons">skip_previous</span></button>
+                            <button class="control-btn play-main" id="mainPlayPause"><span class="material-icons">play_arrow</span></button>
+                            <button class="control-btn" id="mainNext"><span class="material-icons">skip_next</span></button>
+                        </div>
+                        
+                        <div class="player-progress-area">
+                            <span id="mainCurrentTime">0:00</span>
+                            <div class="main-progress-bar-wrapper" id="mainProgressWrapper">
+                                <div class="main-progress-bar" id="mainProgressBar" style="width: 0%"></div>
+                            </div>
+                            <span id="mainDuration">${audio.duration || '0:00'}</span>
+                        </div>
+                        
+                        <div class="player-extra-controls">
+                            <div class="volume-control-main">
+                                <span class="material-icons">volume_up</span>
+                                <div class="main-volume-slider" id="mainVolumeSlider">
+                                    <div class="main-volume-level" id="mainVolumeLevel" style="width: 80%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${audio.description ? `
+                    <div class="audio-description">
+                        <h3 class="description-title">About this Track</h3>
+                        <p>${audio.description}</p>
+                    </div>` : ''}
+                </div>
+            </div>
+        `;
+
+        // Initialize Audio Object & Controls
+        setupMainAudioControls(url);
+    } else {
+        container.innerHTML = '<p class="error-message">Audio track not found.</p>';
+    }
+};
+
+function setupMainAudioControls(url) {
+    const playBtn = document.getElementById('mainPlayPause');
+    const prevBtn = document.getElementById('mainPrev');
+    const nextBtn = document.getElementById('mainNext');
+    const progressWrapper = document.getElementById('mainProgressWrapper');
+    const progressBar = document.getElementById('mainProgressBar');
+    const currentTimeEl = document.getElementById('mainCurrentTime');
+    const durationEl = document.getElementById('mainDuration');
+    const volumeSlider = document.getElementById('mainVolumeSlider');
+    const volumeLevel = document.getElementById('mainVolumeLevel');
+
+    if (!playBtn) return;
+
+    // Use the existing currentAudio object from script.js global scope
+    currentAudio.src = url;
+    currentAudio.load();
+
+    const updateControls = () => {
+        const icon = playBtn.querySelector('.material-icons');
+        icon.textContent = currentAudio.paused ? 'play_arrow' : 'pause';
+    };
+
+    playBtn.addEventListener('click', () => {
+        if (currentAudio.paused) {
+            currentAudio.play();
+        } else {
+            currentAudio.pause();
+        }
+        updateControls();
+    });
+
+    currentAudio.addEventListener('play', updateControls);
+    currentAudio.addEventListener('pause', updateControls);
+
+    currentAudio.addEventListener('timeupdate', () => {
+        const { currentTime, duration } = currentAudio;
+        if (isNaN(duration)) return;
+
+        const progressPercent = (currentTime / duration) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+        currentTimeEl.textContent = formatTime(currentTime);
+        durationEl.textContent = formatTime(duration);
+    });
+
+    // Progress Seeker
+    progressWrapper.addEventListener('click', (e) => {
+        const rect = progressWrapper.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const width = rect.width;
+        const duration = currentAudio.duration;
+        if (!isNaN(duration) && width > 0) {
+            currentAudio.currentTime = (offsetX / width) * duration;
+        }
+    });
+
+    // Volume Seeker
+    if (volumeSlider) {
+        volumeSlider.addEventListener('click', (e) => {
+            const rect = volumeSlider.getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            const volume = Math.max(0, Math.min(1, offsetX / rect.width));
+            currentAudio.volume = volume;
+            volumeLevel.style.width = `${volume * 100}%`;
+        });
+    }
+
+    // Local prev/next rely on finding index in publicContentData
+    prevBtn.addEventListener('click', () => {
+        const id = new URLSearchParams(window.location.search).get('id');
+        let index = publicContentData.audios.findIndex(a => a.id == id);
+        if (index === -1 && !isNaN(id)) index = parseInt(id);
+
+        if (index > 0) {
+            const prevAudio = publicContentData.audios[index - 1];
+            window.location.href = `audio-player.html?id=${prevAudio.id || (index - 1)}`;
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        const id = new URLSearchParams(window.location.search).get('id');
+        let index = publicContentData.audios.findIndex(a => a.id == id);
+        if (index === -1 && !isNaN(id)) index = parseInt(id);
+
+        if (index < publicContentData.audios.length - 1) {
+            const nextAudio = publicContentData.audios[index + 1];
+            window.location.href = `audio-player.html?id=${nextAudio.id || (index + 1)}`;
+        }
+    });
+}
 
 console.log('%c🎵 Onipaba Music Website', 'font-size: 20px; font-weight: bold; color: #D4AF37;');
 
@@ -908,7 +1101,7 @@ function updateSearchIndex() {
             searchIndex.push({
                 title: item.title,
                 type: 'Video',
-                link: 'videos.html', // TODO: Add anchor or modal trigger
+                link: `video-player.html?id=${item.id}`,
                 image: item.thumbnail || 'images/logo-placeholder.png'
             });
         });
@@ -932,7 +1125,7 @@ function updateSearchIndex() {
             searchIndex.push({
                 title: item.title,
                 type: 'Audio',
-                link: 'audios.html',
+                link: `audio-player.html?id=${item.id}`,
                 image: item.cover || 'images/audio.svg'
             });
         });

@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="styles.css?v=1.3">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -99,7 +99,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -122,44 +121,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Music Player (Hidden by default) -->
-    <div class="music-player" id="musicPlayer">
-        <div class="player-track-info">
-            <div class="player-cover" style="background-image: url('data:image/svg+xml,...')"></div>
-            <div class="player-track-details">
-                <div class="player-title">Select a track</div>
-                <div class="player-artist">John Onipaba</div>
-            </div>
-            <span class="material-icons" style="color: #b3b3b3; cursor: pointer;">favorite_border</span>
-        </div>
-
-        <div class="player-controls">
-            <div class="player-buttons">
-                <button class="player-btn" id="shuffleBtn"><span class="material-icons">shuffle</span></button>
-                <button class="player-btn" id="skipPrevBtn"><span class="material-icons">skip_previous</span></button>
-                <button class="player-btn btn-play" id="playPauseBtn">
-                    <span class="material-icons" style="font-size: 20px;">play_arrow</span>
-                </button>
-                <button class="player-btn" id="skipNextBtn"><span class="material-icons">skip_next</span></button>
-                <button class="player-btn" id="repeatBtn"><span class="material-icons">repeat</span></button>
-            </div>
-            <div class="player-progress-container">
-                <span id="currentTime">0:00</span>
-                <div class="progress-bar-wrapper">
-                    <div class="progress-bar" style="width: 0%"></div>
-                </div>
-                <span id="duration">3:35</span>
-            </div>
-        </div>
-
-        <div class="player-volume">
-            <span class="material-icons" style="color: #b3b3b3; font-size: 20px;">volume_up</span>
-            <div class="volume-slider" id="volumeSlider">
-                <div class="volume-level" style="width: 80%"></div>
-            </div>
-        </div>
-    </div>
 
     <script type="module" src="script.js"></script>
 </body>
