@@ -147,6 +147,13 @@ body {
     transition: var(--transition-normal);
 }
 
+@media (max-width: 768px) {
+    .logo img {
+        height: 60px;
+        width: 60px;
+    }
+}
+
 .logo:hover img {
     transform: scale(1.05);
 }
