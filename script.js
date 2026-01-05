@@ -595,7 +595,6 @@ function attachVideoCardListeners() {
     });
 }
 
-// playVideo function removed as per instructions.
 
 // Render Public News
 function renderPublicNews() {
