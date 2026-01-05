@@ -92,10 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// ==========================================
-// DASHBOARD METRICS
-// ==========================================
-
 
 // ==========================================
 // DATA MANAGEMENT (Firestore)
