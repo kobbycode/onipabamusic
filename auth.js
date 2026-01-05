@@ -25,6 +25,7 @@ function handleLogin(event) {
             // Signed in
             const user = userCredential.user;
             console.log('Login successful:', user.email);
+            alert('Debugging: Login Successful! Redirecting to dashboard...'); // DEBUG ALERT
 
             // Fetch user role from Firestore
             const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
