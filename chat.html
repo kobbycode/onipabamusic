@@ -135,6 +135,27 @@
                     <div class="wa-dropdown-item" id="menuClear">Clear View</div>
                 </div>
 
+                <!-- Poll Creation Modal -->
+                <div class="wa-modal" id="pollModal">
+                    <div class="wa-modal-content">
+                        <div class="wa-modal-header">
+                            <h3>Create Poll</h3>
+                            <span class="material-icons"
+                                onclick="document.getElementById('pollModal').classList.remove('active')">close</span>
+                        </div>
+                        <div class="wa-poll-form">
+                            <input type="text" id="pollQuestion" placeholder="Ask a question...">
+                            <div id="pollOptionsContainer">
+                                <input type="text" class="wa-poll-option-input" placeholder="Option 1">
+                                <input type="text" class="wa-poll-option-input" placeholder="Option 2">
+                            </div>
+                            <button class="wa-add-option-btn" type="button" onclick="addPollOption()">+ Add
+                                Option</button>
+                            <button class="wa-submit-poll-btn" type="button" onclick="createPoll()">Create Poll</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Pinned Message Banner -->
                 <div class="wa-pinned-banner" id="pinnedBanner" style="display: none;">
                     <div class="wa-pinned-content" id="pinnedContent" onclick="scrollToPinned()">
@@ -173,6 +194,9 @@
                 <span class="material-icons cancel-recording" onclick="cancelRecording()">delete</span>
             </div>
 
+            <!-- Mentions List -->
+            <div class="wa-mentions-list" id="mentionsList" style="display: none;"></div>
+
             <form class="wa-footer" id="chatForm">
                 <!-- Reply Preview -->
                 <div id="replyPreview" class="wa-reply-preview">
@@ -209,6 +233,8 @@
                 <div class="emoji-picker-menu" id="emojiPickerMenu"></div>
 
                 <span class="material-icons wa-icon-btn" id="emojiBtn">sentiment_satisfied_alt</span>
+                <span class="material-icons wa-icon-btn" id="gifBtn" title="GIF" onclick="openGifPicker()">gif</span>
+                <span class="material-icons wa-icon-btn" id="pollBtn" title="Poll" onclick="openPollModal()">poll</span>
                 <span class="material-icons wa-icon-btn" id="attachBtn">attach_file</span>
                 <div class="wa-input-wrapper">
                     <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off">
