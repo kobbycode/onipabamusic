@@ -1,10 +1,10 @@
 export class SearchManager {
     constructor() {
+        this.ensureModalExists();
         this.modal = document.getElementById('searchModal');
         this.input = document.getElementById('searchInput');
         this.resultsContainer = document.getElementById('searchResults');
         this.closeBtn = document.getElementById('searchClose');
-        this.triggerBtn = document.getElementById('searchTrigger');
 
         this.isOpen = false;
         this.data = {
@@ -16,13 +16,33 @@ export class SearchManager {
         this.init();
     }
 
+    ensureModalExists() {
+        if (document.getElementById('searchModal')) return;
+
+        const modalHtml = `
+            <div class="search-modal" id="searchModal">
+                <div class="search-modal-content">
+                    <button class="search-close" id="searchClose">&times;</button>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search videos, music, news...">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
     init() {
-        if (!this.modal || !this.input || !this.triggerBtn) {
+        if (!this.modal || !this.input) {
+            console.warn('[SearchManager] Required elements missing after injection attempt.');
             return;
         }
 
-        // Event Listeners
-        this.triggerBtn.addEventListener('click', () => this.openSearch());
+        // Event Listeners - Use delegation for trigger so it works even if re-rendered
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#searchTrigger')) {
+                this.openSearch();
+            }
+        });
 
         if (this.closeBtn) {
             this.closeBtn.addEventListener('click', () => this.closeSearch());
