@@ -711,8 +711,8 @@ async function startDM(otherUserId, otherUserName) {
                     [otherUserId]: otherUserName
                 },
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastMessageTimestamp: null,
-                lastMessageText: ''
+                lastMessageTimestamp: firebase.firestore.FieldValue.serverTimestamp(), // Set initially so it shows in sidebar
+                lastMessageText: 'New message thread'
             });
         }
 
@@ -1422,19 +1422,24 @@ async function handleFileUpload(event) {
 
 
                         // Send message with media
-                        await firebase.firestore().collection('chats')
-                            .doc(currentChannel)
-                            .collection('messages')
-                            .add({
-                                text: ``,
-                                mediaUrl: downloadURL,
-                                mediaType: fileType,
-                                fileName: file.name,
-                                userId: user.uid,
-                                userName: (userDoc.exists && userDoc.data().name) ? userDoc.data().name : user.email,
-                                voicePart: (userDoc.exists && userDoc.data().voicePart) ? userDoc.data().voicePart : 'member',
-                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                            });
+                        const mediaCollectionPath = isDM ?
+                            firebase.firestore().collection('dm_threads').doc(currentChannel).collection('messages') :
+                            firebase.firestore().collection('chats').doc(currentChannel).collection('messages');
+
+                        await mediaCollectionPath.add({
+                            text: ``,
+                            mediaUrl: downloadURL,
+                            mediaType: fileType,
+                            fileName: file.name,
+                            userId: user.uid,
+                            userName: (userDoc.exists && userDoc.data().name) ? userDoc.data().name : user.email,
+                            voicePart: (userDoc.exists && userDoc.data().voicePart) ? userDoc.data().voicePart : 'member',
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        if (isDM) {
+                            await updateDMMetadata(currentChannel, `Sent a ${fileType}`);
+                        }
 
 
 
@@ -2031,6 +2036,10 @@ async function createPoll() {
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        if (isDM) {
+            await updateDMMetadata(currentChannel, `📊 Poll: ${question}`);
+        }
+
         document.getElementById('pollModal').classList.remove('active');
     } catch (err) {
         console.error('Create poll error:', err);
@@ -2071,3 +2080,14 @@ async function voteInPoll(messageId, optionIndex) {
     }
 }
 
+// Helper to update DM thread metadata for sidebar
+async function updateDMMetadata(threadId, lastMessageText) {
+    try {
+        await firebase.firestore().collection('dm_threads').doc(threadId).update({
+            lastMessageText: lastMessageText,
+            lastMessageTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error updating DM metadata:", error);
+    }
+}
