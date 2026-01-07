@@ -1585,3 +1585,123 @@ window.filterUsers = function () {
     });
 };
 
+// Giphy Integration
+const GIPHY_API_KEY = 'dc6zaTOxFJmzC';
+
+async function openGifPicker() {
+    const modal = document.getElementById('gifPickerModal');
+    if (!modal) {
+        createNewGifModal();
+        return;
+    }
+    modal.classList.add('active');
+    loadTrendingGifs();
+}
+
+function createNewGifModal() {
+    const modal = document.createElement('div');
+    modal.id = 'gifPickerModal';
+    modal.className = 'wa-modal';
+    modal.innerHTML = `
+        <div class="wa-modal-content">
+            <div class="wa-modal-header">
+                <h3>Select GIF</h3>
+                <span class="material-icons" onclick="document.getElementById('gifPickerModal').classList.remove('active')">close</span>
+            </div>
+            <div class="wa-modal-search">
+                <input type="text" id="gifSearchInput" placeholder="Search GIPHY..." oninput="debounceGifSearch()">
+            </div>
+            <div class="wa-gif-grid" id="gifGrid">
+                <div class="wa-loading-spinner">Loading GIFs...</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+    loadTrendingGifs();
+}
+
+let gifSearchTimeout;
+function debounceGifSearch() {
+    clearTimeout(gifSearchTimeout);
+    gifSearchTimeout = setTimeout(() => {
+        const query = document.getElementById('gifSearchInput').value.trim();
+        if (query) searchGiphy(query);
+        else loadTrendingGifs();
+    }, 500);
+}
+
+async function loadTrendingGifs() {
+    const grid = document.getElementById('gifGrid');
+    try {
+        const response = await fetch(`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=20`);
+        const data = await response.json();
+        renderGifs(data.data);
+    } catch (err) {
+        console.error('Giphy trending error:', err);
+        grid.innerHTML = '<div style="padding: 20px; color: #ff4444;">Error loading trending GIFs.</div>';
+    }
+}
+
+async function searchGiphy(query) {
+    const grid = document.getElementById('gifGrid');
+    try {
+        const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=20`);
+        const data = await response.json();
+        renderGifs(data.data);
+    } catch (err) {
+        console.error('Giphy search error:', err);
+        grid.innerHTML = '<div style="padding: 20px; color: #ff4444;">Error searching GIFs.</div>';
+    }
+}
+
+function renderGifs(gifs) {
+    const grid = document.getElementById('gifGrid');
+    grid.innerHTML = '';
+    gifs.forEach(gif => {
+        const img = document.createElement('img');
+        img.src = gif.images.fixed_height_small.url;
+        img.alt = gif.title;
+        img.onclick = () => sendGif(gif.images.fixed_height.url);
+        grid.appendChild(img);
+    });
+
+    if (gifs.length === 0) {
+        grid.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No GIFs found.</div>';
+    }
+}
+
+async function sendGif(url) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    document.getElementById('gifPickerModal').classList.remove('active');
+
+    try {
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const userData = userDoc.data();
+
+        const collectionPath = isDM ?
+            firebase.firestore().collection('dm_threads').doc(currentChannel).collection('messages') :
+            firebase.firestore().collection('chats').doc(currentChannel).collection('messages');
+
+        await collectionPath.add({
+            text: '',
+            mediaUrl: url,
+            mediaType: 'image', // Treat GIF as image for now
+            fileName: 'GIF',
+            userId: user.uid,
+            userName: userData ? userData.name : user.email,
+            voicePart: userData ? userData.voicePart || 'member' : 'member',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        if (isDM) {
+            await updateDMMetadata(currentChannel, 'Sent a GIF');
+        }
+    } catch (err) {
+        console.error('Error sending GIF:', err);
+        uiManager.showAlert('Failed to send GIF.', 'error');
+    }
+}
+
