@@ -154,21 +154,22 @@ export class AuthManager {
     updateUI() {
         // Update Dashboard Name
         const nameEl = document.getElementById('currentUserName');
-        if (nameEl && this.user) nameEl.textContent = this.user.email;
+        if (nameEl && this.user) {
+            const displayName = (this.userData && this.userData.name) || this.user.displayName || this.user.email.split('@')[0];
+            nameEl.textContent = displayName.split(' ')[0];
+        }
 
         // Update Header Button
         const loginBtn = document.querySelector('.btn-login');
         if (loginBtn && this.user) {
             const displayName = (this.userData && this.userData.name) || this.user.displayName || this.user.email.split('@')[0];
-            const initial = displayName.charAt(0).toUpperCase();
 
             loginBtn.innerHTML = `
-                <div class="user-avatar-small">${initial}</div>
-                <span class="user-name-small">${displayName.split(' ')[0]}</span>
+                <span class="user-name-small" style="font-weight: 600;">${displayName.split(' ')[0]}</span>
             `;
             loginBtn.classList.add('logged-in');
             loginBtn.href = 'profile.html';
-            loginBtn.style.padding = '0.25rem 0.75rem 0.25rem 0.25rem';
+            loginBtn.style.padding = '0.5rem 1rem';
         }
 
         // Init Profile Page specific logic
