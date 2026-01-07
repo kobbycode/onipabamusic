@@ -559,16 +559,26 @@ function listenForDMs() {
 
     unsubscribeDMs = firebase.firestore().collection('dm_threads')
         .where('participants', 'array-contains', user.uid)
-        .orderBy('lastMessageTimestamp', 'desc')
         .onSnapshot((snapshot) => {
             list.innerHTML = '';
             allDMs = {};
 
+            // Convert to array and sort in memory to avoid index requirements and handle null timestamps
+            const threads = [];
+            snapshot.forEach(doc => {
+                threads.push({ id: doc.id, ...doc.data() });
+            });
+
+            threads.sort((a, b) => {
+                const timeA = a.lastMessageTimestamp ? a.lastMessageTimestamp.toMillis() : 0;
+                const timeB = b.lastMessageTimestamp ? b.lastMessageTimestamp.toMillis() : 0;
+                return timeB - timeA;
+            });
+
             let foundCurrent = false;
 
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const id = doc.id;
+            threads.forEach(data => {
+                const id = data.id;
                 allDMs[id] = data;
 
                 const otherUserId = data.participants.find(uid => uid !== user.uid);
@@ -615,6 +625,9 @@ function listenForDMs() {
             if (snapshot.empty) {
                 list.innerHTML = '<div style="padding: 20px; color: #999;">No direct messages yet.</div>';
             }
+        }, (error) => {
+            console.error("DM Listener error:", error);
+            list.innerHTML = `<div style="padding: 20px; color: #ff4444;">Error loading DMs. ${error.message}</div>`;
         });
 }
 
