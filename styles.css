@@ -4970,6 +4970,34 @@ body {
 }
 
 /* ==========================================
+   DESKTOP LAYOUT REFINEMENTS
+   ========================================== */
+@media (min-width: 769px) {
+
+    /* Restore standard chat width on desktop */
+    .wa-message,
+    .wa-msg-text-formatted,
+    .wa-poll-card {
+        max-width: 65% !important;
+        /* Standard WhatsApp web width */
+        width: fit-content !important;
+    }
+
+    /* Ensure poll cards don't get too wide even with 65% */
+    .wa-poll-card {
+        width: 100% !important;
+        /* Fill parent message container */
+        max-width: 500px !important;
+        /* Cap specifically for polls */
+    }
+
+    /* Ensure input bar on desktop has space */
+    .wa-input-wrapper {
+        min-width: 400px;
+    }
+}
+
+/* ==========================================
    FINAL LAYOUT FIXES (Override)
    ========================================== */
 html {
