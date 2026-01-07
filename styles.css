@@ -3338,6 +3338,12 @@ a:not(.nav-link):hover {
     left: -30px;
 }
 
+@media (max-width: 768px) {
+    .reaction-trigger {
+        display: none !important;
+    }
+}
+
 .emoji-picker-popup {
     position: absolute;
     background: var(--color-bg-secondary);
