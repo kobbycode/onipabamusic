@@ -1129,6 +1129,21 @@ function renderMessage(msg) {
         </div>
     `;
 
+    // Mobile Action Toggle
+    messageDiv.onclick = (e) => {
+        // Don't toggle if clicking on an interactive element
+        if (e.target.closest('.action-icon, .reaction-badge, .reaction-trigger, .wa-poll-option, a, button')) {
+            return;
+        }
+
+        // Remove show-actions from all other messages
+        document.querySelectorAll('.wa-message.show-actions').forEach(el => {
+            if (el !== messageDiv) el.classList.remove('show-actions');
+        });
+
+        messageDiv.classList.toggle('show-actions');
+    };
+
     container.appendChild(messageDiv);
 }
 

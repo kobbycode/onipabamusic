@@ -4328,7 +4328,8 @@ video.msg-media-video {
     transition: opacity 0.2s;
 }
 
-.wa-message:hover .message-actions {
+.wa-message:hover .message-actions,
+.wa-message.show-actions .message-actions {
     opacity: 1;
 }
 
@@ -4350,6 +4351,43 @@ video.msg-media-video {
 
 .wa-message.sent .action-icon:hover {
     color: #000;
+}
+
+/* Mobile Action Reveal Support */
+.wa-message {
+    cursor: pointer;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .message-actions {
+        position: absolute;
+        top: -35px;
+        right: 0;
+        background: rgba(26, 20, 16, 0.95);
+        padding: 5px 10px;
+        border-radius: 20px;
+        border: 1px solid var(--color-gold-primary);
+        box-shadow: var(--shadow-md);
+        z-index: 100;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .wa-message.show-actions .message-actions {
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    .wa-message.sent .message-actions {
+        right: 0;
+    }
+
+    .wa-message.received .message-actions {
+        left: 0;
+        right: auto;
+    }
 }
 
 .edited-tag {
