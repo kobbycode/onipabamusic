@@ -12,6 +12,9 @@ let mediaRecorder = null;
 let audioChunks = [];
 let recordingStartTime = null;
 let recordingTimerInterval = null;
+let latestOtherReadTimestamp = 0;
+let unsubscribeReadStatus = null;
+
 
 // Expose these to global scope because they are called via onclick in generated HTML
 window.deleteMessage = (id) => deleteMessage(id);
@@ -366,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Redirect to profile or show simple alert for now if profile.html doesn't exist/work yet
                 window.location.href = 'index.html#profile'; // Assuming profile section exists or user wants to go home
                 // Based on user request history, user has a profile page probably? or just an anchor.
-                // Let's check navigation: <a href="index.html">Home</a>... <a href="login.html">Login</a>
                 // There is no explicit profile page in the nav provided in chat.html view.
                 // Using a safe fallback.
                 uiManager.showAlert('Profile feature coming soon!', 'info');
@@ -517,6 +519,69 @@ function switchChannel(channelId, element) {
 
     // Listen for Typing
     listenForTyping(channelId);
+
+    // Listen for Read Status (Blue Ticks)
+    listenForReadStatus(channelId);
+
+    // Mark as read immediately
+    markChannelAsRead(channelId);
+}
+
+// Mark current channel as read for current user
+async function markChannelAsRead(channelId) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    try {
+        await firebase.firestore().collection('channels').doc(channelId)
+            .collection('readStatus').doc(user.uid).set({
+                lastRead: firebase.firestore.FieldValue.serverTimestamp()
+            });
+    } catch (err) {
+        console.error("Read status update error:", err);
+    }
+}
+
+// Listen for other users' read status to update blue ticks
+function listenForReadStatus(channelId) {
+    if (unsubscribeReadStatus) unsubscribeReadStatus();
+
+    const user = firebase.auth().currentUser;
+
+    unsubscribeReadStatus = firebase.firestore().collection('channels').doc(channelId)
+        .collection('readStatus')
+        .onSnapshot((snapshot) => {
+            let maxRead = 0;
+            snapshot.forEach(doc => {
+                if (doc.id !== (user ? user.uid : '')) {
+                    const data = doc.data();
+                    if (data.lastRead) {
+                        const ts = data.lastRead.toMillis ? data.lastRead.toMillis() : (data.lastRead.seconds * 1000);
+                        if (ts > maxRead) maxRead = ts;
+                    }
+                }
+            });
+
+            if (maxRead > latestOtherReadTimestamp) {
+                latestOtherReadTimestamp = maxRead;
+                updateBlueTicks();
+            }
+        });
+}
+
+function updateBlueTicks() {
+    const sentMessages = document.querySelectorAll('.wa-message.sent');
+    sentMessages.forEach(msgEl => {
+        const messageTimestamp = parseInt(msgEl.dataset.timestamp, 10);
+        const checkIcon = msgEl.querySelector('.wa-msg-check');
+        if (checkIcon) {
+            if (messageTimestamp <= latestOtherReadTimestamp) {
+                checkIcon.classList.add('read');
+            } else {
+                checkIcon.classList.remove('read');
+            }
+        }
+    });
 }
 
 // Typing Indicator Handler
@@ -616,6 +681,9 @@ function renderMessage(msg) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `wa-message ${isSent ? 'sent' : 'received'}`;
     messageDiv.dataset.id = msg.id;
+    if (msg.timestamp) {
+        messageDiv.dataset.timestamp = msg.timestamp.toMillis();
+    }
 
     // Quoted Reply HTML
     let replyHtml = '';
@@ -704,8 +772,9 @@ function renderMessage(msg) {
                     ${adminActions}
                 </div>
                 <span class="wa-msg-time">${time} ${editedHtml}</span>
-                ${isSent ? '<span class="material-icons wa-msg-check">done_all</span>' : ''}
+                ${isSent ? `<span class="material-icons wa-msg-check ${msg.timestamp && msg.timestamp.toMillis() <= latestOtherReadTimestamp ? 'read' : ''}">done_all</span>` : ''}
             </span>
+
             ${reactionsHtml}
             <div class="reaction-trigger" onclick="showEmojiPicker(event, '${msg.id}')">
                 <span class="material-icons">add_reaction</span>
@@ -1072,7 +1141,7 @@ async function startRecording() {
         mediaRecorder.onstop = async () => {
             updateRecordingUI(false);
             stopRecordingTimer();
-            
+
             if (audioChunks.length > 0 && !window.recordingCancelled) {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 await uploadAudio(audioBlob);
@@ -1138,7 +1207,7 @@ async function uploadAudio(blob) {
 function updateRecordingUI(isRecording) {
     const overlay = document.getElementById('recordingOverlay');
     const micIcon = document.getElementById('micBtn');
-    
+
     if (isRecording) {
         overlay.classList.add('active');
         micIcon.style.color = '#ff4444';

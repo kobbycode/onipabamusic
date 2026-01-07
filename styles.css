@@ -4279,8 +4279,14 @@ video.msg-media-video {
     color: rgba(0, 0, 0, 0.5) !important;
 }
 
-.wa-message.sent .wa-msg-check {
-    color: rgba(0, 0, 0, 0.4) !important;
+.wa-msg-check {
+    font-size: 16px !important;
+    margin-left: 2px;
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.wa-msg-check.read {
+    color: #34B7F1 !important;
 }
 
 /* Reply Quote Styles */
@@ -4353,6 +4359,7 @@ video.msg-media-video {
     opacity: 0.6;
     margin-left: 4px;
 }
+
 /* Lightbox Styles */
 .wa-lightbox {
     position: fixed;
@@ -4460,19 +4467,39 @@ video.msg-media-video {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
-    50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
-    100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+    0% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4);
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+        box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+    }
 }
 
 @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
 }
 
 
 /* UI Refinements */
-.wa-footer-icon, #micBtn, .wa-icon-btn {
+.wa-footer-icon,
+#micBtn,
+.wa-icon-btn {
     cursor: pointer !important;
 }
-
