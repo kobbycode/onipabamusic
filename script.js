@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // MOBILE CHAT MENU TOGGLE
 // ==========================================
-window.toggleMobileMenu = function () {
+function toggleMobileMenu() {
     const menu = document.getElementById('mobileMoreMenu');
     if (!menu) return;
 
@@ -1856,7 +1856,18 @@ window.toggleMobileMenu = function () {
 
     // Toggle
     menu.style.display = isVisible ? 'none' : 'flex';
-};
+}
+
+// Attach listener on load
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileBtn = document.getElementById('mobileMenuBtn');
+    if (mobileBtn) {
+        mobileBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent immediate closing
+            toggleMobileMenu();
+        });
+    }
+});
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', (e) => {
