@@ -1741,18 +1741,50 @@ window.shareContent = async function (type, url = window.location.href, title = 
 // DYNAMIC CONTENT (Settings & Team)
 // ==========================================
 
-async function updateSocialLinks() {
+async function loadSiteSettings() {
     try {
         if (typeof firebase === 'undefined' || typeof db === 'undefined') {
-            console.warn("Firebase not initialized, cannot load social links.");
+            console.warn("Firebase not initialized.");
             return;
         }
 
         const doc = await db.collection('settings').doc('general').get();
         if (doc.exists) {
             const data = doc.data();
+
+            // 1. Render Navbar
+            if (data.navLinks && data.navLinks.length > 0) {
+                const navContainer = document.querySelector('.nav');
+                if (navContainer) {
+                    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+                    navContainer.innerHTML = data.navLinks.map(link =>
+                        `<a href="${link.url}" class="nav-link ${currentPath === link.url ? 'active' : ''}">${link.text}</a>`
+                    ).join('');
+                }
+            }
+
+            // 2. Render Footer
+            if (data.footerSettings) {
+                const footerBrand = document.querySelector('.footer-brand');
+                if (footerBrand) {
+                    const p = footerBrand.querySelector('p');
+                    if (p && data.footerSettings.description) p.textContent = data.footerSettings.description;
+                }
+
+                const footerBottom = document.querySelector('.footer-bottom p');
+                if (footerBottom && data.footerSettings.copyright) footerBottom.textContent = data.footerSettings.copyright;
+
+                // Newsletter title check if needed
+                if (data.footerSettings.newsletter) {
+                    const newsHeader = document.querySelector('.newsletter-section h3');
+                    if (newsHeader) newsHeader.textContent = data.footerSettings.newsletter;
+                }
+            }
+
+            // 3. Render Social Links (Contact Page & Footer if implemented)
             const social = data.socialSettings;
             if (social) {
+                // Contact Page Links
                 if (document.getElementById('contact-facebook') && social.facebook) document.getElementById('contact-facebook').href = social.facebook;
                 if (document.getElementById('contact-twitter') && social.twitter) document.getElementById('contact-twitter').href = social.twitter;
                 if (document.getElementById('contact-instagram') && social.instagram) document.getElementById('contact-instagram').href = social.instagram;
@@ -1760,7 +1792,7 @@ async function updateSocialLinks() {
             }
         }
     } catch (error) {
-        console.warn("Could not load social settings:", error);
+        console.warn("Could not load site settings:", error);
     }
 }
 
@@ -1770,7 +1802,6 @@ async function loadTeamMembers() {
 
     try {
         if (typeof db === 'undefined') {
-            teamGrid.innerHTML = '<p style="text-align: center; color: var(--color-error);">Unable to load team members.</p>';
             return;
         }
 
@@ -1805,6 +1836,6 @@ async function loadTeamMembers() {
 
 // Initialize Dynamic Content
 document.addEventListener('DOMContentLoaded', () => {
-    updateSocialLinks();
+    loadSiteSettings();
     loadTeamMembers();
 });

@@ -210,6 +210,36 @@ document.addEventListener('DOMContentLoaded', async function () {
                 } catch (e) {
                     console.error("Error loading initial settings:", e);
                 }
+
+                // Apply Defaults if empty (Migration Strategy)
+                if (!contentData.navLinks || contentData.navLinks.length === 0) {
+                    contentData.navLinks = [
+                        { text: 'Home', url: 'index.html', id: 1 },
+                        { text: 'About', url: 'about.html', id: 2 },
+                        { text: 'Videos', url: 'videos.html', id: 3 },
+                        { text: 'Audios', url: 'audios.html', id: 4 },
+                        { text: 'PDFs', url: 'pdfs.html', id: 5 },
+                        { text: 'News', url: 'news.html', id: 6 },
+                        { text: 'Contact', url: 'contact.html', id: 7 },
+                        { text: 'Chat', url: 'chat.html', id: 8 }
+                    ];
+                }
+                if (!contentData.footerSettings || !contentData.footerSettings.title) {
+                    contentData.footerSettings = {
+                        title: 'Onipaba Music',
+                        description: 'Touching souls and elevating spirits through the divine power of choral harmony. Join us in our musical journey.',
+                        newsletter: 'Stay Updated',
+                        copyright: '© 2025 Onipaba Music. All rights reserved.'
+                    };
+                }
+                if (!contentData.socialSettings) {
+                    contentData.socialSettings = {
+                        facebook: 'https://facebook.com',
+                        twitter: 'https://twitter.com',
+                        instagram: 'https://instagram.com',
+                        youtube: 'https://youtube.com'
+                    };
+                }
             }
             renderNavLinks();
             loadSettings();
