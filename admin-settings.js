@@ -1,9 +1,32 @@
 // ==========================================
+// HELPERS (Missing in original codebase)
+// ==========================================
+function addContentItem(collection, item) {
+    if (!contentData[collection]) contentData[collection] = [];
+    contentData[collection].push(item);
+    saveContentData();
+}
+
+function updateContentItem(collection, index, item) {
+    if (contentData[collection] && contentData[collection][index]) {
+        contentData[collection][index] = item;
+        saveContentData();
+    }
+}
+
+function deleteContentItem(collection, index) {
+    if (contentData[collection] && contentData[collection][index]) {
+        contentData[collection].splice(index, 1);
+        saveContentData();
+    }
+}
+
+// ==========================================
 // WEBSITE SETTINGS - HEADER NAV MANAGEMENT
 // ==========================================
 
 // Show/Hide Nav Link Form
-function showNavLinkForm(index = null) {
+window.showNavLinkForm = function (index = null) {
     const form = document.getElementById('navLinkForm');
     const formTitle = document.getElementById('navLinkFormTitle');
     const navLinkFormElement = document.getElementById('navLinkFormElement');
@@ -26,14 +49,14 @@ function showNavLinkForm(index = null) {
     document.getElementById('navLinksList').style.display = 'none';
 }
 
-function hideNavLinkForm() {
+window.hideNavLinkForm = function () {
     document.getElementById('navLinkForm').style.display = 'none';
     document.getElementById('navLinksList').style.display = 'block';
     document.getElementById('navLinkFormElement').reset();
 }
 
 // Save Nav Link (Add or Update)
-function saveNavLink(event) {
+window.saveNavLink = function (event) {
     event.preventDefault();
 
     if (!contentData.navLinks) {
@@ -58,7 +81,7 @@ function saveNavLink(event) {
 }
 
 // Delete Nav Link
-function deleteNavLink(index) {
+window.deleteNavLink = function (index) {
     uiManager.showConfirm('Are you sure you want to delete this navigation link?', function () {
         deleteContentItem('navLinks', index);
         renderNavLinks();
@@ -66,7 +89,7 @@ function deleteNavLink(index) {
 }
 
 // Render Nav Links Table
-function renderNavLinks() {
+window.renderNavLinks = function () {
     const tbody = document.getElementById('navLinksTableBody');
     const emptyState = document.getElementById('navLinksEmptyState');
     const table = document.querySelector('#navLinksList .admin-table');
@@ -141,8 +164,13 @@ function loadSettings() {
 }
 
 // Save Footer Settings
-function saveFooterSettings(event) {
+window.saveFooterSettings = async function (event) {
     event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
 
     contentData.footerSettings = {
         title: document.getElementById('footerTitle').value,
@@ -151,13 +179,25 @@ function saveFooterSettings(event) {
         copyright: document.getElementById('footerCopyright').value
     };
 
-    saveContentData();
-    uiManager.showAlert('Footer settings saved successfully!', 'success');
+    try {
+        await saveContentData();
+        uiManager.showAlert('Footer settings saved successfully!', 'success');
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
 }
 
 // Save Social Settings
-window.saveSocialSettings = function (event) {
+window.saveSocialSettings = async function (event) {
     event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
 
     contentData.socialSettings = {
         facebook: document.getElementById('socialFacebook').value,
@@ -166,8 +206,15 @@ window.saveSocialSettings = function (event) {
         youtube: document.getElementById('socialYoutube').value
     };
 
-    saveContentData();
-    uiManager.showAlert('Social media links saved successfully!', 'success');
+    try {
+        await saveContentData();
+        uiManager.showAlert('Social media links saved successfully!', 'success');
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
 };
 
 // Helper to save content data to Firestore
