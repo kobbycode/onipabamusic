@@ -1843,9 +1843,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // MOBILE CHAT MENU TOGGLE
 // ==========================================
-function toggleMobileMenu() {
+// Expose globally to ensure HTML onclick can find it
+window.toggleMobileMenu = function () {
+    console.log('Toggle Mobile Menu Clicked'); // Debugging
     const menu = document.getElementById('mobileMoreMenu');
-    if (!menu) return;
+    if (!menu) {
+        console.error('Menu element not found!');
+        return;
+    }
 
     // Check if currently visible
     const isVisible = menu.style.display === 'flex';
@@ -1856,18 +1861,8 @@ function toggleMobileMenu() {
 
     // Toggle
     menu.style.display = isVisible ? 'none' : 'flex';
-}
-
-// Attach listener on load
-document.addEventListener('DOMContentLoaded', () => {
-    const mobileBtn = document.getElementById('mobileMenuBtn');
-    if (mobileBtn) {
-        mobileBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent immediate closing
-            toggleMobileMenu();
-        });
-    }
-});
+    console.log('Menu display set to:', menu.style.display);
+};
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', (e) => {
