@@ -4964,7 +4964,8 @@ body {
 
     /* Hide less critical icons to make input longer */
     #pollBtn,
-    #gifBtn {
+    #gifBtn,
+    #emojiBtn {
         display: none !important;
     }
 
