@@ -4253,10 +4253,35 @@ video.msg-media-video {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 5;
+    z-index: 90;
     animation: slideDown 0.3s ease-out;
     position: sticky;
     top: 0;
+}
+
+/* Chat Search Bar (Needs to be inside header/relative to it usually, but we moved it out in previous step potentially?) 
+   Wait, search bar WAS inside header in previous HTML. 
+   We need to ensure .wa-chat-search-bar styles still work if it was deleted or moved.
+   Actually, looking at previous step, I deleted search bar from HTML replacement chunk!
+   CRITICAL: I need to put it back in HTML first or ensuring styles support it if I moved it.
+   
+   Wait, I see I removed the Search Bar div in the previous step's HTML replacement.
+   I need to restore the Search Bar in the HTML! 
+   
+   Let me fix the CSS first for the Banner, then I will restore the Search bar in HTML.
+*/
+
+.wa-pinned-banner {
+    top: 0;
+}
+
+@media (max-width: 768px) {
+    .wa-pinned-banner {
+        top: 60px;
+        /* Below the 60px header */
+        z-index: 400;
+        /* Below header z-index 500 */
+    }
 }
 
 .wa-reply-preview.active {
