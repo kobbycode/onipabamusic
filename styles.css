@@ -4776,3 +4776,74 @@ video.msg-media-video {
     text-decoration: underline;
 }
 
+
+/* Pinned Message Banner */
+.wa-pinned-banner {
+    background: rgba(18, 140, 126, 0.15);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 50;
+    animation: slideDown 0.3s ease-out;
+}
+
+.wa-pinned-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.wa-pinned-content .material-icons {
+    color: var(--color-gold-primary);
+    font-size: 1.2rem;
+    transform: rotate(45deg);
+}
+
+.wa-pinned-text-wrap {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.wa-pinned-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-gold-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wa-pinned-text {
+    font-size: 0.85rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.unpin-btn {
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.unpin-btn:hover {
+    color: #ff4444;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+

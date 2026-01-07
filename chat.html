@@ -135,6 +135,19 @@
                     <div class="wa-dropdown-item" id="menuClear">Clear View</div>
                 </div>
 
+                <!-- Pinned Message Banner -->
+                <div class="wa-pinned-banner" id="pinnedBanner" style="display: none;">
+                    <div class="wa-pinned-content" id="pinnedContent" onclick="scrollToPinned()">
+                        <span class="material-icons">push_pin</span>
+                        <div class="wa-pinned-text-wrap">
+                            <span class="wa-pinned-label">Pinned Message</span>
+                            <p class="wa-pinned-text" id="pinnedBannerText"></p>
+                        </div>
+                    </div>
+                    <span class="material-icons unpin-btn" id="unpinBtn" onclick="unpinMessage(event)"
+                        style="display: none;">close</span>
+                </div>
+
                 <!-- Search Bar Overlay -->
                 <div class="wa-chat-search-bar" id="chatSearchBar">
                     <span class="material-icons" id="closeSearchBtn">arrow_back</span>

@@ -833,8 +833,13 @@ function listenForTyping(channelId) {
     unsubscribeTyping = collection.doc(channelId)
         .onSnapshot((doc) => {
             const data = doc.data();
+
+            // Handle Pinned Message UI
+            updatePinnedBanner(data);
+
             const typing = data ? data.typing || {} : {};
             const user = firebase.auth().currentUser;
+
 
             const typingNames = Object.entries(typing)
                 .filter(([uid, info]) => uid !== (user ? user.uid : '') && (Date.now() - info.timestamp < 5000))
@@ -977,9 +982,14 @@ function renderMessage(msg) {
     }
 
     // Actions
+    const pinAction = isAdmin && !isDM ? `
+        <span class="material-icons action-icon pin-icon" onclick="pinMessage('${msg.id}')" title="Pin Message">push_pin</span>
+    ` : '';
+
     const adminActions = isAdmin ? `
         <span class="material-icons action-icon" onclick="deleteMessage('${msg.id}')" title="Delete">delete</span>
     ` : '';
+
 
     const userActions = isSent ? `
         <span class="material-icons action-icon" onclick="editMessage('${msg.id}')" title="Edit">edit</span>
@@ -1045,10 +1055,12 @@ function renderMessage(msg) {
             ${linkPreviewHtml}
             <span class="wa-msg-meta">
                 <div class="message-actions">
+                    ${pinAction}
                     ${commonActions}
                     ${userActions}
                     ${adminActions}
                 </div>
+
                 <span class="wa-msg-time">${time} ${editedHtml}</span>
                 ${isSent ? `<span class="material-icons wa-msg-check ${msg.timestamp && msg.timestamp.toMillis() <= latestOtherReadTimestamp ? 'read' : ''}">done_all</span>` : ''}
             </span>
@@ -1743,7 +1755,7 @@ async function fetchLinkPreview(url) {
         // Using microlink.io public API (free tier)
         const response = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url));
         if (!response.ok) return null;
-        
+
         const data = await response.json();
         if (data.status === 'success') {
             return {
@@ -1757,6 +1769,71 @@ async function fetchLinkPreview(url) {
     } catch (err) {
         console.error('Link preview error:', err);
         return null;
+    }
+}
+
+
+// Message Pinning Logic
+async function pinMessage(messageId) {
+    if (!isAdmin || isDM) return;
+
+    try {
+        const msgDoc = await firebase.firestore().collection('chats').doc(currentChannel).collection('messages').doc(messageId).get();
+        if (!msgDoc.exists) return;
+
+        const msgData = msgDoc.data();
+        await firebase.firestore().collection('chats').doc(currentChannel).update({
+            pinnedMessageId: messageId,
+            pinnedMessageText: msgData.text || (msgData.mediaType ? 'Media Message' : 'Pinned Message'),
+            pinnedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        uiManager.showAlert('Message pinned!', 'success');
+    } catch (err) {
+        console.error('Pin error:', err);
+        uiManager.showAlert('Failed to pin message.', 'error');
+    }
+}
+
+async function unpinMessage(e) {
+    if (e) e.stopPropagation();
+    if (!isAdmin || isDM) return;
+
+    try {
+        await firebase.firestore().collection('chats').doc(currentChannel).update({
+            pinnedMessageId: firebase.firestore.FieldValue.delete(),
+            pinnedMessageText: firebase.firestore.FieldValue.delete(),
+            pinnedAt: firebase.firestore.FieldValue.delete()
+        });
+        uiManager.showAlert('Message unpinned!', 'success');
+    } catch (err) {
+        console.error('Unpin error:', err);
+    }
+}
+
+window.scrollToPinned = function () {
+    const banner = document.getElementById('pinnedBanner');
+    const msgId = banner.dataset.pinnedId;
+    if (msgId) scrollToMessage(msgId);
+};
+
+function updatePinnedBanner(data) {
+    const banner = document.getElementById('pinnedBanner');
+    const textEl = document.getElementById('pinnedBannerText');
+    const unpinBtn = document.getElementById('unpinBtn');
+
+    if (data && data.pinnedMessageId) {
+        banner.style.display = 'flex';
+        banner.dataset.pinnedId = data.pinnedMessageId;
+        textEl.textContent = data.pinnedMessageText || 'Pinned Message';
+
+        if (isAdmin && !isDM) {
+            unpinBtn.style.display = 'block';
+        } else {
+            unpinBtn.style.display = 'none';
+        }
+    } else {
+        banner.style.display = 'none';
+        banner.dataset.pinnedId = '';
     }
 }
 
