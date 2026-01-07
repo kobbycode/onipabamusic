@@ -496,6 +496,7 @@ function listenForChannels() {
                 // Ensure we are listening to messages if not already
                 if (!unsubscribeMessages) {
                     listenForMessages(currentChannel);
+                    listenForTyping(currentChannel);
                 }
             }
             div.onclick = () => switchChannel(id, div);
@@ -661,7 +662,7 @@ function switchChannel(id, element) {
         currentOtherUser = null;
     }
 
-    if (currentChannel === id && ((isDM && type === 'dm') || (!isDM && type === 'channel')) && unsubscribeMessages) return;
+    if (currentChannel === id && ((isDM && type === 'dm') || (!isDM && type === 'channel')) && unsubscribeMessages && unsubscribeTyping) return;
 
     // UI Updates
     document.querySelectorAll('.wa-chat-item').forEach(i => i.classList.remove('active'));
@@ -845,9 +846,6 @@ function handleTyping() {
 function listenForTyping(channelId) {
     if (unsubscribeTyping) unsubscribeTyping();
 
-    const indicatorEl = document.getElementById('typingIndicator');
-    if (!indicatorEl) return;
-
     const collection = isDM ? firebase.firestore().collection('dm_threads') : firebase.firestore().collection('channels');
 
     unsubscribeTyping = collection.doc(channelId)
@@ -856,6 +854,9 @@ function listenForTyping(channelId) {
 
             // Handle Pinned Message UI
             updatePinnedBanner(data);
+
+            const indicatorEl = document.getElementById('typingIndicator');
+            if (!indicatorEl) return;
 
             const typing = data ? data.typing || {} : {};
             const user = firebase.auth().currentUser;
