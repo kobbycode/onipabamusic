@@ -80,6 +80,7 @@ body {
     color: var(--color-text-primary);
     line-height: 1.6;
     overflow-x: hidden;
+    width: 100%;
 }
 
 img {
@@ -3134,6 +3135,9 @@ a:not(.nav-link):hover {
     background: #0b0e11;
     z-index: 100;
     position: relative;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
+    width: 100%;
 }
 
 @media (max-width: 768px) {
