@@ -4904,6 +4904,66 @@ body {
 }
 
 /* ==========================================
+   MOBILE FOOTER LAYOUT FIXES
+   ========================================== */
+.wa-footer {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+    /* Safety */
+}
+
+/* Make input expand to fill space */
+.wa-input-wrapper {
+    flex: 1 1 auto !important;
+    /* Grow and shrink */
+    min-width: 0 !important;
+    /* Allow flexbox shrinking */
+    display: flex !important;
+}
+
+#messageInput {
+    width: 100% !important;
+    padding: 10px 15px !important;
+    min-width: 0 !important;
+}
+
+/* Fix Send Button White Background */
+.wa-send-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.wa-send-btn .material-icons {
+    font-size: 24px !important;
+    background: var(--color-bg-tertiary);
+    /* Dark background bubble */
+    padding: 8px;
+    border-radius: 50%;
+    color: var(--color-gold-primary) !important;
+    /* Gold arrow */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Tweak icons for mobile to save space */
+@media (max-width: 480px) {
+    .wa-icon-btn {
+        padding: 6px !important;
+        font-size: 22px !important;
+    }
+
+    .wa-footer {
+        gap: 4px !important;
+        padding: 8px 6px !important;
+    }
+}
+
+/* ==========================================
    FINAL LAYOUT FIXES (Override)
    ========================================== */
 html {
