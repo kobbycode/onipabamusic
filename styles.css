@@ -4973,6 +4973,20 @@ body {
     #mobileMenuBtn {
         display: block !important;
     }
+
+    /* Robust Menu Positioning */
+    #mobileMoreMenu {
+        position: fixed !important;
+        /* Fix to viewport to avoid clipping */
+        bottom: 70px !important;
+        left: 10px !important;
+        z-index: 99999 !important;
+        /* Ensure it's on top of everything */
+        background: rgba(30, 30, 30, 0.95) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
 }
 
 /* ==========================================
