@@ -4503,3 +4503,127 @@ video.msg-media-video {
 .wa-icon-btn {
     cursor: pointer !important;
 }
+/* Sidebar Sections */
+.wa-sidebar-section {
+    padding: 15px 20px 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-gold-primary);
+    opacity: 0.7;
+    letter-spacing: 1px;
+}
+
+/* Modal Styles */
+.wa-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.wa-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.wa-modal-content {
+    background: var(--color-bg-secondary);
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.wa-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wa-modal-header h3 {
+    margin: 0;
+    color: var(--color-gold-primary);
+    font-family: var(--font-primary);
+}
+
+.wa-modal-header span {
+    cursor: pointer;
+    color: var(--color-text-muted);
+}
+
+.wa-modal-search {
+    padding: 15px 20px;
+}
+
+.wa-modal-search input {
+    width: 100%;
+    background: var(--color-bg-primary);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: #fff;
+}
+
+.wa-user-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.wa-user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    gap: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.wa-user-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.wa-user-item img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid var(--color-gold-primary);
+}
+
+.wa-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.wa-user-name {
+    color: #fff;
+    font-weight: 500;
+}
+
+.wa-user-role {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* Loading Spinner */
+.wa-loading-spinner {
+    padding: 40px;
+    text-align: center;
+    color: var(--color-gold-primary);
+}
+

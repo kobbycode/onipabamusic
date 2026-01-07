@@ -14,7 +14,8 @@ let recordingStartTime = null;
 let recordingTimerInterval = null;
 let latestOtherReadTimestamp = 0;
 let unsubscribeReadStatus = null;
-
+let isDM = false; // New
+let currentOtherUser = null; // New: { uid, name }
 
 // Expose these to global scope because they are called via onclick in generated HTML
 window.deleteMessage = (id) => deleteMessage(id);
@@ -25,8 +26,10 @@ window.cancelRecording = () => cancelRecording();
 window.toggleReaction = (id, emoji) => toggleReaction(id, emoji);
 window.showEmojiPicker = (event, id) => showEmojiPicker(event, id);
 window.switchChannel = (id, el) => switchChannel(id, el);
+window.startDM = (otherUserId, otherUserName) => startDM(otherUserId, otherUserName);
 window.openLightbox = (url) => openLightbox(url);
 window.closeLightbox = () => closeLightbox();
+window.openNewChat = () => openNewChat();
 
 // Initialize Chat
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const avatarEl = document.getElementById('currentUserAvatar');
                     if (avatarEl) {
                         avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=D4AF37&color=fff`;
+                        avatarEl.title = userName; // Add title for hover
                     }
                 }
             } catch (err) {
@@ -68,9 +72,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sidebar) sidebar.classList.remove('active-mobile');
         }
     });
+    document.getElementById('dmList').addEventListener('click', (e) => { // New: For DMs
+        if (window.innerWidth <= 768 && (e.target.closest('.wa-chat-item') || e.target.closest('.wa-avatar'))) {
+            const sidebar = document.querySelector('.wa-sidebar');
+            if (sidebar) sidebar.classList.remove('active-mobile');
+        }
+    });
 
     // Listen for Channels
     listenForChannels();
+
+    // Listen for Recent DMs
+    listenForDMs();
+
+    // New Chat Button (Open User List Modal)
+    const newChatBtn = document.getElementById('sidebarNewChatBtn');
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', openNewChat);
+    }
 
     // Setup Message Submission
     const chatForm = document.getElementById('chatForm');
@@ -426,6 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Helper to get DM thread ID
+function getThreadId(user1Id, user2Id) {
+    return user1Id < user2Id ? `${user1Id}_${user2Id}` : `${user2Id}_${user1Id}`;
+}
+
 // Listen for Channels
 function listenForChannels() {
     const list = document.getElementById('channelList');
@@ -444,7 +468,8 @@ function listenForChannels() {
             const div = document.createElement('div');
             div.className = 'wa-chat-item';
             div.dataset.id = id;
-            if (id === currentChannel) {
+            div.dataset.type = 'channel'; // New: Indicate type
+            if (id === currentChannel && !isDM) { // Check isDM
                 div.classList.add('active');
                 foundCurrent = true;
                 updateHeader();
@@ -476,7 +501,7 @@ function listenForChannels() {
 
         if (snapshot.empty) {
             list.innerHTML = '<div style="padding: 20px; color: #999;">No channels. Ask an admin to create one!</div>';
-        } else if (!foundCurrent) {
+        } else if (!foundCurrent && !isDM) { // Only default if no DM is active
             // Default to first available if current gone
             const first = list.querySelector('.wa-chat-item');
             if (first) switchChannel(first.dataset.id, first);
@@ -484,47 +509,234 @@ function listenForChannels() {
     });
 }
 
+// New: Listen for DMs
+function listenForDMs() {
+    const list = document.getElementById('dmList');
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        list.innerHTML = '<div style="padding: 20px; color: #999;">Login to see your DMs.</div>';
+        return;
+    }
+
+    firebase.firestore().collection('dm_threads')
+        .where('participants', 'array-contains', user.uid)
+        .orderBy('lastMessageTimestamp', 'desc')
+        .onSnapshot((snapshot) => {
+            list.innerHTML = '';
+            allDMs = {};
+
+            let foundCurrent = false;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const id = doc.id;
+                allDMs[id] = data;
+
+                const otherUserId = data.participants.find(uid => uid !== user.uid);
+                const otherUserName = data.participantNames[otherUserId] || 'Unknown User';
+
+                const div = document.createElement('div');
+                div.className = 'wa-chat-item';
+                div.dataset.id = id;
+                div.dataset.type = 'dm'; // New: Indicate type
+                div.dataset.otherUserId = otherUserId;
+                div.dataset.otherUserName = otherUserName;
+
+                if (id === currentChannel && isDM) {
+                    div.classList.add('active');
+                    foundCurrent = true;
+                    updateHeader();
+                    if (!unsubscribeMessages) {
+                        listenForMessages(currentChannel);
+                    }
+                }
+                div.onclick = () => switchChannel(id, div);
+
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}&background=D4AF37&color=fff`;
+
+                const lastMessageTime = data.lastMessageTimestamp ? data.lastMessageTimestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+                div.innerHTML = `
+                    <div class="wa-avatar">
+                        <img src="${avatarUrl}" alt="${otherUserName}">
+                    </div>
+                    <div class="wa-chat-info">
+                        <div class="wa-chat-row-top">
+                            <span class="wa-chat-name">${otherUserName}</span>
+                            <span class="wa-chat-time">${lastMessageTime}</span>
+                        </div>
+                        <div class="wa-chat-row-bottom">
+                            <span class="wa-chat-preview">${data.lastMessageText || ''}</span>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            if (snapshot.empty) {
+                list.innerHTML = '<div style="padding: 20px; color: #999;">No direct messages yet.</div>';
+            }
+        });
+}
+
 // Update Header
 function updateHeader() {
-    const channel = allChannels[currentChannel];
     const avatarImg = document.getElementById('activeChannelAvatar');
 
-    if (channel) {
-        document.getElementById('activeChannelName').textContent = `# ${channel.name}`;
-        document.getElementById('activeChannelStatus').textContent = channel.description || '';
+    if (isDM) {
+        const dmThread = allDMs[currentChannel];
+        if (dmThread && currentOtherUser) {
+            document.getElementById('activeChannelName').textContent = currentOtherUser.name;
+            document.getElementById('activeChannelStatus').textContent = 'Direct Message';
 
-        const avatarUrl = channel.iconUrl || `https://ui-avatars.com/api/?name=%23&background=128C7E&color=fff`;
-        avatarImg.src = avatarUrl;
-        avatarImg.style.opacity = '1';
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentOtherUser.name)}&background=D4AF37&color=fff`;
+            avatarImg.src = avatarUrl;
+            avatarImg.style.opacity = '1';
+        } else {
+            document.getElementById('activeChannelName').textContent = 'Direct Message';
+            document.getElementById('activeChannelStatus').textContent = '';
+            avatarImg.style.opacity = '0';
+        }
     } else {
-        document.getElementById('activeChannelName').textContent = '';
-        document.getElementById('activeChannelStatus').textContent = '';
-        avatarImg.style.opacity = '0';
+        const channel = allChannels[currentChannel];
+        if (channel) {
+            document.getElementById('activeChannelName').textContent = `# ${channel.name}`;
+            document.getElementById('activeChannelStatus').textContent = channel.description || '';
+
+            const avatarUrl = channel.iconUrl || `https://ui-avatars.com/api/?name=%23&background=128C7E&color=fff`;
+            avatarImg.src = avatarUrl;
+            avatarImg.style.opacity = '1';
+        } else {
+            document.getElementById('activeChannelName').textContent = '';
+            document.getElementById('activeChannelStatus').textContent = '';
+            avatarImg.style.opacity = '0';
+        }
     }
 }
 
 // Switch Channel
-function switchChannel(channelId, element) {
-    if (currentChannel === channelId && unsubscribeMessages) return;
+function switchChannel(id, element) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        uiManager.showAlert("Please login to view chats!", 'error');
+        return;
+    }
+
+    const type = element ? element.dataset.type : (allChannels[id] ? 'channel' : (allDMs[id] ? 'dm' : null));
+
+    if (!type) {
+        console.error("Unknown chat type for ID:", id);
+        return;
+    }
+
+    // Determine if it's a DM
+    isDM = (type === 'dm');
+
+    // Set currentOtherUser for DMs
+    if (isDM) {
+        const otherUserId = element ? element.dataset.otherUserId : allDMs[id]?.participants.find(uid => uid !== user.uid);
+        const otherUserName = element ? element.dataset.otherUserName : allDMs[id]?.participantNames[otherUserId];
+        currentOtherUser = { uid: otherUserId, name: otherUserName };
+    } else {
+        currentOtherUser = null;
+    }
+
+    if (currentChannel === id && ((isDM && type === 'dm') || (!isDM && type === 'channel')) && unsubscribeMessages) return;
 
     // UI Updates
     document.querySelectorAll('.wa-chat-item').forEach(i => i.classList.remove('active'));
     if (element) element.classList.add('active');
 
-    currentChannel = channelId;
+    currentChannel = id;
     updateHeader();
 
     // Listen for Messages
-    listenForMessages(channelId);
+    listenForMessages(currentChannel);
 
     // Listen for Typing
-    listenForTyping(channelId);
+    listenForTyping(currentChannel);
 
     // Listen for Read Status (Blue Ticks)
-    listenForReadStatus(channelId);
+    listenForReadStatus(currentChannel);
 
     // Mark as read immediately
-    markChannelAsRead(channelId);
+    markChannelAsRead(currentChannel);
+}
+
+// New: Start a Direct Message
+async function startDM(otherUserId, otherUserName) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        uiManager.showAlert("Please login to start a DM!", 'error');
+        return;
+    }
+    if (user.uid === otherUserId) {
+        uiManager.showAlert("You cannot start a DM with yourself.", 'info');
+        return;
+    }
+
+    const threadId = getThreadId(user.uid, otherUserId);
+    const dmRef = firebase.firestore().collection('dm_threads').doc(threadId);
+
+    try {
+        const dmDoc = await dmRef.get();
+        if (!dmDoc.exists) {
+            // Create new DM thread
+            await dmRef.set({
+                participants: [user.uid, otherUserId],
+                participantNames: {
+                    [user.uid]: document.getElementById('currentUserAvatar').title || user.displayName || 'You',
+                    [otherUserId]: otherUserName
+                },
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastMessageTimestamp: null,
+                lastMessageText: ''
+            });
+        }
+
+        // Find the element in the DM list and switch to it
+        const dmElement = document.querySelector(`.wa-chat-item[data-id="${threadId}"][data-type="dm"]`);
+        if (dmElement) {
+            switchChannel(threadId, dmElement);
+        } else {
+            // If not yet rendered by listener, force switch
+            isDM = true;
+            currentOtherUser = { uid: otherUserId, name: otherUserName };
+            currentChannel = threadId;
+            updateHeader();
+            listenForMessages(threadId);
+            listenForTyping(threadId);
+            listenForReadStatus(threadId);
+            markChannelAsRead(threadId);
+        }
+
+        // Close the new chat modal
+        const newChatModal = document.getElementById('newChatModal');
+        if (newChatModal) newChatModal.classList.remove('active');
+
+        // Close sidebar on mobile
+        const sidebar = document.querySelector('.wa-sidebar');
+        if (sidebar && window.innerWidth <= 768) {
+            sidebar.classList.remove('active-mobile');
+        }
+
+    } catch (error) {
+        console.error("Error starting DM:", error);
+        uiManager.showAlert("Failed to start direct message. Please try again.", 'error');
+    }
+}
+
+// New: Update DM thread metadata
+async function updateDMMetadata(threadId, lastMessageText) {
+    const dmRef = firebase.firestore().collection('dm_threads').doc(threadId);
+    try {
+        await dmRef.update({
+            lastMessageTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            lastMessageText: lastMessageText
+        });
+    } catch (error) {
+        console.error("Error updating DM metadata:", error);
+    }
 }
 
 // Mark current channel as read for current user
@@ -533,7 +745,8 @@ async function markChannelAsRead(channelId) {
     if (!user) return;
 
     try {
-        await firebase.firestore().collection('channels').doc(channelId)
+        const collection = isDM ? firebase.firestore().collection('dm_threads') : firebase.firestore().collection('channels');
+        await collection.doc(channelId)
             .collection('readStatus').doc(user.uid).set({
                 lastRead: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -547,8 +760,9 @@ function listenForReadStatus(channelId) {
     if (unsubscribeReadStatus) unsubscribeReadStatus();
 
     const user = firebase.auth().currentUser;
+    const collection = isDM ? firebase.firestore().collection('dm_threads') : firebase.firestore().collection('channels');
 
-    unsubscribeReadStatus = firebase.firestore().collection('channels').doc(channelId)
+    unsubscribeReadStatus = collection.doc(channelId)
         .collection('readStatus')
         .onSnapshot((snapshot) => {
             let maxRead = 0;
@@ -592,7 +806,7 @@ function handleTyping() {
     if (typingTimeout) clearTimeout(typingTimeout);
 
     // Update typing status in Firestore
-    const typingRef = firebase.firestore().collection('channels').doc(currentChannel);
+    const typingRef = isDM ? firebase.firestore().collection('dm_threads').doc(currentChannel) : firebase.firestore().collection('channels').doc(currentChannel);
     typingRef.update({
         [`typing.${user.uid}`]: {
             name: document.getElementById('currentUserAvatar').title || user.displayName || 'Someone',
@@ -614,7 +828,9 @@ function listenForTyping(channelId) {
     const indicatorEl = document.getElementById('typingIndicator');
     if (!indicatorEl) return;
 
-    unsubscribeTyping = firebase.firestore().collection('channels').doc(channelId)
+    const collection = isDM ? firebase.firestore().collection('dm_threads') : firebase.firestore().collection('channels');
+
+    unsubscribeTyping = collection.doc(channelId)
         .onSnapshot((doc) => {
             const data = doc.data();
             const typing = data ? data.typing || {} : {};
@@ -646,7 +862,9 @@ function listenForMessages(channelId) {
     const messagesContainer = document.getElementById('chatMessages');
     messagesContainer.innerHTML = '<div class="wa-system-message"><span>Loading messages...</span></div>';
 
-    unsubscribeMessages = firebase.firestore().collection('chats')
+    const collection = isDM ? firebase.firestore().collection('dm_threads') : firebase.firestore().collection('chats');
+
+    unsubscribeMessages = collection
         .doc(channelId)
         .collection('messages')
         .orderBy('timestamp', 'asc')
@@ -702,7 +920,7 @@ function renderMessage(msg) {
 
     // Badge styling
     let badgeHtml = '';
-    if (msg.voicePart && msg.voicePart !== 'member') {
+    if (msg.voicePart && msg.voicePart !== 'member' && !isDM) { // Don't show voice part in DMs
         const partLabel = msg.voicePart.charAt(0).toUpperCase() + msg.voicePart.slice(1);
         badgeHtml = `<span class="voice-badge badge-${msg.voicePart}">${partLabel}</span>`;
     }
@@ -824,7 +1042,7 @@ async function handleSendMessage(e) {
     const text = input.value.trim();
     const user = firebase.auth().currentUser;
 
-    if (!text && !replyToId) return;
+    if (!text && !replyToId && !editingMessageId) return; // Allow empty text for media messages
 
     if (!user) {
         uiManager.showAlert("Please login to join the chat!", 'error');
@@ -833,10 +1051,12 @@ async function handleSendMessage(e) {
     }
 
     try {
+        const messageCollectionRef = isDM ?
+            firebase.firestore().collection('dm_threads').doc(currentChannel).collection('messages') :
+            firebase.firestore().collection('chats').doc(currentChannel).collection('messages');
+
         if (editingMessageId) {
-            await firebase.firestore().collection('chats')
-                .doc(currentChannel)
-                .collection('messages')
+            await messageCollectionRef
                 .doc(editingMessageId)
                 .update({
                     text: text,
@@ -882,11 +1102,17 @@ async function handleSendMessage(e) {
             cancelReply();
         }
 
-        // Add to Firestore
-        await firebase.firestore().collection('chats')
-            .doc(currentChannel)
-            .collection('messages')
-            .add(messageData);
+        // Add message to Firestore
+        const collectionPath = isDM ?
+            firebase.firestore().collection('dm_threads').doc(currentChannel).collection('messages') :
+            firebase.firestore().collection('chats').doc(currentChannel).collection('messages');
+
+        await collectionPath.add(messageData);
+
+        // Update thread metadata for sidebar if DM
+        if (isDM) {
+            await updateDMMetadata(currentChannel, text || 'Sent a media message');
+        }
 
         input.value = '';
     } catch (error) {
@@ -1233,4 +1459,85 @@ function stopRecordingTimer() {
     clearInterval(recordingTimerInterval);
     document.getElementById('recordingTimer').textContent = '00:00';
 }
+
+// New Chat Modal & User Listing
+async function openNewChat() {
+    const modal = document.getElementById('newChatModal');
+    if (!modal) {
+        createNewChatModal();
+        return;
+    }
+    modal.classList.add('active');
+    loadUsersForDM();
+}
+
+function createNewChatModal() {
+    const modal = document.createElement('div');
+    modal.id = 'newChatModal';
+    modal.className = 'wa-modal';
+    modal.innerHTML = `
+        <div class="wa-modal-content">
+            <div class="wa-modal-header">
+                <h3>Start New Chat</h3>
+                <span class="material-icons" onclick="document.getElementById('newChatModal').classList.remove('active')">close</span>
+            </div>
+            <div class="wa-modal-search">
+                <input type="text" id="userSearchInput" placeholder="Search users..." oninput="filterUsers()">
+            </div>
+            <div class="wa-user-list" id="modalUserList">
+                <div class="wa-loading-spinner">Loading users...</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+    loadUsersForDM();
+}
+
+async function loadUsersForDM() {
+    const userListContainer = document.getElementById('modalUserList');
+    const currentUser = firebase.auth().currentUser;
+
+    try {
+        const snapshot = await firebase.firestore().collection('users').limit(50).get();
+        userListContainer.innerHTML = '';
+
+        snapshot.forEach(doc => {
+            const userData = doc.data();
+            if (doc.id === currentUser.uid) return; // Skip self
+
+            const name = userData.name || userData.email || 'Unknown User';
+            const userItem = document.createElement('div');
+            userItem.className = 'wa-user-item';
+            userItem.onclick = () => startDM(doc.id, name);
+
+            const avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=D4AF37&color=fff';
+
+            userItem.innerHTML = `
+                <img src="${avatarUrl}" alt="avatar">
+                <div class="wa-user-info">
+                    <span class="wa-user-name">${name}</span>
+                    <span class="wa-user-role">${userData.role || 'Member'}</span>
+                </div>
+            `;
+            userListContainer.appendChild(userItem);
+        });
+
+        if (userListContainer.innerHTML === '') {
+            userListContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No users found.</div>';
+        }
+    } catch (err) {
+        console.error('Error loading users:', err);
+        userListContainer.innerHTML = '<div style="padding: 20px; color: #ff4444;">Error loading users.</div>';
+    }
+}
+
+window.filterUsers = function () {
+    const query = document.getElementById('userSearchInput').value.toLowerCase();
+    const items = document.querySelectorAll('.wa-user-item');
+    items.forEach(item => {
+        const name = item.querySelector('.wa-user-name').textContent.toLowerCase();
+        item.style.display = name.includes(query) ? 'flex' : 'none';
+    });
+};
 
