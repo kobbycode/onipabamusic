@@ -4404,3 +4404,69 @@ video.msg-media-video {
     color: var(--color-gold-primary);
 }
 
+
+/* Voice Recording Styles */
+.wa-recording-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--color-bg-secondary);
+    display: none;
+    align-items: center;
+    padding: 0 20px;
+    gap: 15px;
+    z-index: 100;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+.wa-recording-overlay.active {
+    display: flex;
+}
+
+.recording-dot {
+    width: 12px;
+    height: 12px;
+    background: #ff4444;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+#recordingTimer {
+    font-family: "JetBrains Mono", monospace;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 60px;
+}
+
+.recording-label {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.cancel-recording {
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+}
+
+.cancel-recording:hover {
+    color: #ff4444;
+    transform: scale(1.2);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+    50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+    100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+

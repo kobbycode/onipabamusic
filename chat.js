@@ -10,12 +10,15 @@ let replyToId = null;
 let editingMessageId = null;
 let mediaRecorder = null;
 let audioChunks = [];
+let recordingStartTime = null;
+let recordingTimerInterval = null;
 
 // Expose these to global scope because they are called via onclick in generated HTML
 window.deleteMessage = (id) => deleteMessage(id);
 window.editMessage = (id) => editMessage(id);
 window.initReply = (id) => initReply(id);
 window.cancelReply = () => cancelReply();
+window.cancelRecording = () => cancelRecording();
 window.toggleReaction = (id, emoji) => toggleReaction(id, emoji);
 window.showEmojiPicker = (event, id) => showEmojiPicker(event, id);
 window.switchChannel = (id, el) => switchChannel(id, el);
@@ -169,11 +172,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (messageInput) {
         messageInput.addEventListener('input', handleTyping);
     }
-    // Mic Button placeholder
+    // Mic Button Logic
     const micBtn = document.getElementById('micBtn');
     if (micBtn) {
         micBtn.addEventListener('click', () => {
-            uiManager.showAlert("Voice notes are coming soon to Onipaba Music!", 'info');
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                stopRecording();
+            } else {
+                startRecording();
+            }
         });
     }
 
@@ -1044,3 +1051,117 @@ async function handleFileUpload(event) {
     // Reset file input
     event.target.value = '';
 }
+
+// Voice Recording Logic
+async function startRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstart = () => {
+            recordingStartTime = Date.now();
+            updateRecordingUI(true);
+            startRecordingTimer();
+        };
+
+        mediaRecorder.onstop = async () => {
+            updateRecordingUI(false);
+            stopRecordingTimer();
+            
+            if (audioChunks.length > 0 && !window.recordingCancelled) {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                await uploadAudio(audioBlob);
+            }
+            window.recordingCancelled = false;
+        };
+
+        mediaRecorder.start();
+    } catch (err) {
+        console.error('Mic error:', err);
+        uiManager.showAlert('Could not access microphone.', 'error');
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+}
+
+function cancelRecording() {
+    window.recordingCancelled = true;
+    stopRecording();
+}
+
+async function uploadAudio(blob) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const filePath = 'chat_media/' + currentChannel + '/voice_' + user.uid + '_' + Date.now() + '.webm';
+    const storageRef = firebase.storage().ref(filePath);
+
+    uiManager.showAlert('Sending voice note...', 'info');
+
+    try {
+        const snapshot = await storageRef.put(blob);
+        const url = await snapshot.ref.getDownloadURL();
+
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const userData = userDoc.data();
+        const userName = userData ? userData.name : user.email;
+        const voicePart = userData ? userData.voicePart || 'member' : 'member';
+
+        await firebase.firestore().collection('chats')
+            .doc(currentChannel)
+            .collection('messages')
+            .add({
+                userId: user.uid,
+                userName: userName,
+                voicePart: voicePart,
+                mediaUrl: url,
+                mediaType: 'audio',
+                fileName: 'Voice Note',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+    } catch (err) {
+        console.error('Audio upload error:', err);
+        uiManager.showAlert('Failed to send voice note.', 'error');
+    }
+}
+
+function updateRecordingUI(isRecording) {
+    const overlay = document.getElementById('recordingOverlay');
+    const micIcon = document.getElementById('micBtn');
+    
+    if (isRecording) {
+        overlay.classList.add('active');
+        micIcon.style.color = '#ff4444';
+        micIcon.textContent = 'stop';
+    } else {
+        overlay.classList.remove('active');
+        micIcon.style.color = '';
+        micIcon.textContent = 'mic';
+    }
+}
+
+function startRecordingTimer() {
+    const timerEl = document.getElementById('recordingTimer');
+    recordingTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const secs = (elapsed % 60).toString().padStart(2, '0');
+        timerEl.textContent = mins + ':' + secs;
+    }, 1000);
+}
+
+function stopRecordingTimer() {
+    clearInterval(recordingTimerInterval);
+    document.getElementById('recordingTimer').textContent = '00:00';
+}
+

@@ -151,6 +151,13 @@
 
             <div id="typingIndicator" class="typing-indicator-bar"></div>
 
+            <div id="recordingOverlay" class="wa-recording-overlay">
+                <div class="recording-dot"></div>
+                <span id="recordingTimer">00:00</span>
+                <span class="recording-label">Recording...</span>
+                <span class="material-icons cancel-recording" onclick="cancelRecording()">delete</span>
+            </div>
+
             <form class="wa-footer" id="chatForm">
                 <!-- Reply Preview -->
                 <div id="replyPreview" class="wa-reply-preview">
