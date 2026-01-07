@@ -235,7 +235,22 @@
 
                 <span class="material-icons wa-icon-btn" id="emojiBtn">sentiment_satisfied_alt</span>
                 <span class="material-icons wa-icon-btn" id="gifBtn" title="GIF" onclick="openGifPicker()">gif</span>
+                <!-- Mobile "More" Menu for Polls/GIFs -->
+                <div class="emoji-picker-menu" id="mobileMoreMenu" style="bottom: 70px; left: 10px; display: none;">
+                    <button type="button" class="wa-icon-btn" onclick="openPollModal()"
+                        style="color: #fff; width: 100%; justify-content: flex-start; gap: 10px; padding: 10px;">
+                        <span class="material-icons">poll</span> Poll
+                    </button>
+                    <button type="button" class="wa-icon-btn" onclick="openGifPicker()"
+                        style="color: #fff; width: 100%; justify-content: flex-start; gap: 10px; padding: 10px;">
+                        <span class="material-icons">gif</span> GIF
+                    </button>
+                </div>
+
                 <span class="material-icons wa-icon-btn" id="pollBtn" title="Poll" onclick="openPollModal()">poll</span>
+                <span class="material-icons wa-icon-btn" id="gifBtn" title="GIF" onclick="openGifPicker()">gif</span>
+                <span class="material-icons wa-icon-btn" id="mobileMenuBtn" style="display: none;"
+                    onclick="toggleMobileMenu()">more_vert</span>
                 <span class="material-icons wa-icon-btn" id="attachBtn">attach_file</span>
                 <div class="wa-input-wrapper">
                     <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off">

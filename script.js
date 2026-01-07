@@ -1839,3 +1839,33 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSiteSettings();
     loadTeamMembers();
 });
+
+// ==========================================
+// MOBILE CHAT MENU TOGGLE
+// ==========================================
+window.toggleMobileMenu = function () {
+    const menu = document.getElementById('mobileMoreMenu');
+    if (!menu) return;
+
+    // Check if currently visible
+    const isVisible = menu.style.display === 'flex';
+
+    // Close other menus first if needed
+    const emojiMenu = document.getElementById('emojiPickerMenu');
+    if (emojiMenu) emojiMenu.style.display = 'none';
+
+    // Toggle
+    menu.style.display = isVisible ? 'none' : 'flex';
+};
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('mobileMoreMenu');
+    const btn = document.getElementById('mobileMenuBtn');
+
+    if (menu && menu.style.display === 'flex') {
+        if (e.target !== menu && !menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    }
+});

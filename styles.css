@@ -4967,6 +4967,11 @@ body {
     #gifBtn {
         display: none !important;
     }
+
+    /* Show Mobile More Button */
+    #mobileMenuBtn {
+        display: block !important;
+    }
 }
 
 /* ==========================================
