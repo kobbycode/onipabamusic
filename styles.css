@@ -4470,3 +4470,9 @@ video.msg-media-video {
     to { transform: translateY(0); }
 }
 
+
+/* UI Refinements */
+.wa-footer-icon, #micBtn, .wa-icon-btn {
+    cursor: pointer !important;
+}
+
