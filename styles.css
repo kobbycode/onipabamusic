@@ -5052,14 +5052,29 @@ video.msg-media-video {
     border-radius: 12px;
     padding: 16px;
     margin: 10px 0;
-    min-width: 260px;
+    min-width: 240px;
+    /* Reduced slightly for mobile safety */
     max-width: 100%;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    /* Ensure z-index works */
+    z-index: 5;
+    /* Sit above any message bubble pseudo-elements */
 }
 
+/* Fix colors when inside a SENT message (Polished Brass overrides) */
 .wa-message.sent .wa-poll-card {
-    background: rgba(0, 0, 0, 0.15);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.3);
+    /* Darker background for contrast against brass */
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff !important;
+    /* Force white text inside poll even if message is black */
+}
+
+/* Ensure poll text elements are white in sent messages */
+.wa-message.sent .wa-poll-question,
+.wa-message.sent .wa-poll-opt-text {
+    color: #fff !important;
 }
 
 /* Fix overlap with metadata */
@@ -5069,6 +5084,8 @@ video.msg-media-video {
     display: flex;
     justify-content: flex-end;
     width: 100%;
+    position: relative;
+    z-index: 5;
 }
 
 .wa-poll-question {
