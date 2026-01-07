@@ -15,6 +15,7 @@ let recordingStartTime = null;
 let recordingTimerInterval = null;
 let latestOtherReadTimestamp = 0;
 let unsubscribeReadStatus = null;
+let unsubscribeDMs = null; // New: For Direct Messages
 let isDM = false; // New
 let currentOtherUser = null; // New: { uid, name }
 
@@ -55,6 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error('[Chat] Auth update error:', err);
             }
+
+            // Listen for Recent DMs - Now inside auth changed
+            listenForDMs();
+        } else {
+            // User logged out
+            if (unsubscribeDMs) {
+                unsubscribeDMs();
+                unsubscribeDMs = null;
+            }
+            const dmList = document.getElementById('dmList');
+            if (dmList) {
+                dmList.innerHTML = '<div style="padding: 20px; color: #999;">Login to see your DMs.</div>';
+            }
         }
     });
 
@@ -83,8 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listen for Channels
     listenForChannels();
 
-    // Listen for Recent DMs
-    listenForDMs();
+    // listenForDMs() is now handled within onAuthStateChanged
 
     // New Chat Button (Open User List Modal)
     const newChatBtn = document.getElementById('sidebarNewChatBtn');
@@ -540,7 +553,11 @@ function listenForDMs() {
         return;
     }
 
-    firebase.firestore().collection('dm_threads')
+    if (unsubscribeDMs) {
+        unsubscribeDMs();
+    }
+
+    unsubscribeDMs = firebase.firestore().collection('dm_threads')
         .where('participants', 'array-contains', user.uid)
         .orderBy('lastMessageTimestamp', 'desc')
         .onSnapshot((snapshot) => {
