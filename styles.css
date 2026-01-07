@@ -4847,6 +4847,63 @@ video.msg-media-video {
 }
 
 /* ==========================================
+   NUCLEAR SCROLL FIXES (APPENDED) 
+   ========================================== */
+html,
+body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative !important;
+}
+
+.whatsapp-container,
+.wa-main,
+.wa-chat-body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Prevent long words from breaking layout */
+.wa-message,
+.wa-msg-text-formatted,
+.wa-poll-card {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 85vw !important;
+    /* Cap width safely on mobile */
+}
+
+/* Kill 100vw on all modals */
+.search-modal,
+.wa-modal,
+.video-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+}
+
+@media (max-width: 768px) {
+
+    /* Hide triggers strictly */
+    .reaction-trigger {
+        display: none !important;
+    }
+
+    /* Ensure footer doesn't overflow */
+    .wa-footer {
+        max-width: 100% !important;
+    }
+
+    /* Force flex items to shrink if needed */
+    .header-content,
+    .nav {
+        max-width: 100% !important;
+    }
+}
+
+/* ==========================================
    FINAL LAYOUT FIXES (Override)
    ========================================== */
 html {
