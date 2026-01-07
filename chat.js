@@ -1807,7 +1807,7 @@ async function pinMessage(messageId) {
         if (!msgDoc.exists) return;
 
         const msgData = msgDoc.data();
-        await firebase.firestore().collection('chats').doc(currentChannel).update({
+        await firebase.firestore().collection('channels').doc(currentChannel).update({
             pinnedMessageId: messageId,
             pinnedMessageText: msgData.text || (msgData.mediaType ? 'Media Message' : 'Pinned Message'),
             pinnedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1824,7 +1824,7 @@ async function unpinMessage(e) {
     if (!isAdmin || isDM) return;
 
     try {
-        await firebase.firestore().collection('chats').doc(currentChannel).update({
+        await firebase.firestore().collection('channels').doc(currentChannel).update({
             pinnedMessageId: firebase.firestore.FieldValue.delete(),
             pinnedMessageText: firebase.firestore.FieldValue.delete(),
             pinnedAt: firebase.firestore.FieldValue.delete()
