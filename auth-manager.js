@@ -108,6 +108,7 @@ export class AuthManager {
         const isLoginPage = path.includes('login.html') || path.includes('signup.html');
         const isDashboard = path.includes('dashboard.html') || path.endsWith('/admin');
         const isProfilePage = path.includes('profile.html');
+        const isChatPage = path.includes('chat.html');
 
         console.log('[AuthManager] Enforcing protection. Path:', path, 'Auth:', isAuthenticated);
 
@@ -120,7 +121,7 @@ export class AuthManager {
             this.updateUI();
         } else {
             // Not logged in: Redirect AWAY from protected pages
-            if (isDashboard || isProfilePage) {
+            if (isDashboard || isProfilePage || isChatPage) {
                 console.warn('[AuthManager] Protected page access denied. Redirecting to login.');
                 // Save intended destination
                 sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);

@@ -50,14 +50,14 @@
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </button>
-                    <a href="login.html" class="btn-login"
+                    <a href="login.html" class="btn-login" id="loginBtn"
                         style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="10" cy="6" r="4" stroke="currentColor" stroke-width="1.5" />
                             <path d="M4 18C4 14.6863 6.68629 12 10 12C13.3137 12 16 14.6863 16 18" stroke="currentColor"
                                 stroke-width="1.5" stroke-linecap="round" />
                         </svg>
-                        Login
+                        <span>Login</span>
                     </a>
                 </div>
                 <button class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -79,7 +79,8 @@
                         alt="User">
                 </div>
                 <div class="wa-header-actions">
-
+                    <span class="material-icons" id="sidebarNewChatBtn" title="New Chat">chat</span>
+                    <span class="material-icons" id="sidebarMenuBtn" title="Menu">more_vert</span>
                 </div>
 
                 <!-- Sidebar Menu -->
@@ -109,6 +110,9 @@
         <!-- Main Chat Area -->
         <div class="wa-main">
             <div class="wa-header">
+                <button class="mobile-sidebar-toggle" onclick="toggleChatSidebar()" aria-label="Toggle channels">
+                    <span class="material-icons">menu</span>
+                </button>
                 <div class="wa-avatar">
                     <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                         id="activeChannelAvatar" alt="Channel" style="opacity: 0;">

@@ -5,18 +5,50 @@ let unsubscribeMessages = null;
 let isAdmin = false;
 let allChannels = {};
 
+// Expose these to global scope because they are called via onclick in generated HTML
+window.deleteMessage = (id) => deleteMessage(id);
+window.toggleReaction = (id, emoji) => toggleReaction(id, emoji);
+window.showEmojiPicker = (event, id) => showEmojiPicker(event, id);
+window.switchChannel = (id, el) => switchChannel(id, el);
+
 // Initialize Chat
 document.addEventListener('DOMContentLoaded', () => {
     // Check Admin status & Update User UI
+    // Note: This will be unified with AuthManager later, but for now we ensure it works
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
-            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
-            const userData = userDoc.data();
-            isAdmin = userData && (userData.role === 'admin' || userData.role === 'superadmin');
+            try {
+                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    isAdmin = userData && (userData.role === 'admin' || userData.role === 'superadmin');
 
-            // Update personal avatar in sidebar
-            const userName = userData ? userData.name : user.email;
-            document.getElementById('currentUserAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=D4AF37&color=fff`;
+                    // Update personal avatar in sidebar
+                    const userName = userData.name || user.email;
+                    const avatarEl = document.getElementById('currentUserAvatar');
+                    if (avatarEl) {
+                        avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=D4AF37&color=fff`;
+                    }
+                }
+            } catch (err) {
+                console.error('[Chat] Auth update error:', err);
+            }
+        }
+    });
+
+    // Mobile Sidebar Toggle Support
+    window.toggleChatSidebar = function () {
+        const sidebar = document.querySelector('.wa-sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('active-mobile');
+        }
+    };
+
+    // Close sidebar on channel selection (mobile)
+    document.getElementById('channelList').addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && (e.target.closest('.wa-chat-item') || e.target.closest('.wa-avatar'))) {
+            const sidebar = document.querySelector('.wa-sidebar');
+            if (sidebar) sidebar.classList.remove('active-mobile');
         }
     });
 
