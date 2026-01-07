@@ -4840,6 +4840,20 @@ video.msg-media-video {
     box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
 
+/* ==========================================
+   FINAL LAYOUT FIXES (Override)
+   ========================================== */
+html {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.search-modal {
+    width: 100% !important;
+    /* Fix 100vw issue */
+}
+
 /* GIF Picker Modal adjustments */
 #gifPickerModal .wa-modal-content {
     max-width: 500px;
