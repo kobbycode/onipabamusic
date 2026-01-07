@@ -5064,12 +5064,28 @@ video.msg-media-video {
 
 /* Fix colors when inside a SENT message (Polished Brass overrides) */
 .wa-message.sent .wa-poll-card {
-    background: rgba(0, 0, 0, 0.3);
-    /* Darker background for contrast against brass */
+    background: rgba(0, 0, 0, 0.6);
+    /* Much darker background for legibility */
     border-color: rgba(255, 255, 255, 0.2);
     color: #fff !important;
     /* Force white text inside poll even if message is black */
+    width: 100%;
 }
+
+/* CRITICAL FIX: Remove the message bubble styling if it contains a poll 
+   This works by checking if .wa-message has a .wa-poll-card child, 
+   and if so, removes the gold background/padding so the poll stands alone.
+*/
+.wa-message.sent:has(.wa-poll-card) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 5px 0 !important;
+    /* Minimal padding */
+    width: 100%;
+}
+
+/* Ensure poll text elements are white in sent messages */
 
 /* Ensure poll text elements are white in sent messages */
 .wa-message.sent .wa-poll-question,
