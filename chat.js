@@ -5,6 +5,7 @@ let unsubscribeMessages = null;
 let unsubscribeTyping = null;
 let isAdmin = false;
 let allChannels = {};
+let allDMs = {}; // New: Correctly declaring DMs globally
 let typingTimeout = null;
 let replyToId = null;
 let editingMessageId = null;
