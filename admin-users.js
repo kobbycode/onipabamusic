@@ -85,7 +85,7 @@ window.hideUserForm = function () {
 // Save User
 window.saveUser = async function (event) {
     event.preventDefault();
-    const btn = event.target.querySelector('.btn-primary');
+    const btn = event.target.querySelector('.btn-admin-primary');
     const originalText = btn.textContent;
     btn.textContent = 'Saving...';
     btn.disabled = true;

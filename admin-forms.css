@@ -57,6 +57,12 @@
     background: rgba(212, 175, 55, 0.05);
 }
 
+.form-group select option {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    padding: 10px;
+}
+
 .form-group textarea {
     min-height: 100px;
     resize: vertical;
