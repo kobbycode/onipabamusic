@@ -125,7 +125,7 @@ body {
     background: rgba(26, 20, 16, 0.95);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-    z-index: 1000;
+    z-index: 2000 !important;
     transition: var(--transition-normal);
 }
 
@@ -3127,9 +3127,20 @@ a:not(.nav-link):hover {
    CHAT FIXES
    ========================================== */
 .whatsapp-container {
-    height: calc(100vh - 140px) !important;
-    margin-top: 140px;
-    max-height: 900px;
+    height: calc(100vh - 120px) !important;
+    margin-top: 120px;
+    max-height: calc(100vh - 120px);
+    display: flex;
+    background: #0b0e11;
+    z-index: 100;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .whatsapp-container {
+        margin-top: 80px;
+        height: calc(100vh - 80px) !important;
+    }
 }
 
 .wa-chat-body {
@@ -3158,7 +3169,19 @@ a:not(.nav-link):hover {
 }
 
 .wa-chat-item.active {
-    background: rgba(212, 175, 55, 0.1);
+    background: rgba(212, 175, 55, 0.15);
+    border-left: 3px solid var(--color-gold-primary);
+}
+
+.wa-sidebar .wa-header {
+    background: rgba(32, 44, 51, 1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+}
+
+.wa-main .wa-header {
+    background: rgba(32, 44, 51, 0.98) !important;
+    z-index: 10;
 }
 
 .wa-avatar {
@@ -3171,6 +3194,28 @@ a:not(.nav-link):hover {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid var(--color-gold-primary);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.1);
+    border: 2px solid var(--color-gold-primary);
+    padding: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
 }
 
 .wa-avatar img {
@@ -3556,11 +3601,14 @@ a:not(.nav-link):hover {
    Chat Styling Overrides (Dark & Elegant)
    ========================================== */
 
-/* Sent Message - Dark Gold Gradient */
+/* Sent Message - Polished Brass Gradient */
 .wa-message.sent {
-    background: linear-gradient(135deg, #4d3d0a, #352905) !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
-    color: #e9edef !important;
+    background: linear-gradient(135deg, #8B6B23 0%, #D4AF37 50%, #8B6B23 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #000 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    font-weight: 600 !important;
+    text-shadow: 0 0.5px 1px rgba(255, 255, 255, 0.4);
 }
 
 /* Ensure text is readable */
@@ -3658,9 +3706,11 @@ video.msg-media-video {
 }
 
 /* Chat Search Bar */
+/* Chat Header Fixes */
 .wa-header {
+    background: #202c33 !important;
     position: relative;
-    /* Ensure header can contain absolute items */
+    z-index: 100;
 }
 
 .wa-chat-search-bar {
@@ -4195,6 +4245,20 @@ video.msg-media-video {
     animation: slideUp 0.2s ease-out;
 }
 
+.wa-pinned-banner {
+    background: rgba(32, 44, 51, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 5;
+    animation: slideDown 0.3s ease-out;
+    position: sticky;
+    top: 0;
+}
+
 .wa-reply-preview.active {
     display: flex;
 }
@@ -4254,9 +4318,9 @@ video.msg-media-video {
 
 /* Message enhancements - Premium Gold for Sent */
 .wa-message.sent {
-    background: linear-gradient(135deg, #c5a059 0%, #a68245 100%) !important;
+    background: linear-gradient(135deg, #8B6B23 0%, #D4AF37 50%, #8B6B23 100%) !important;
     color: #000 !important;
-    font-weight: 500;
+    font-weight: 600;
     border: none !important;
 }
 
@@ -4330,7 +4394,8 @@ video.msg-media-video {
 
 .wa-message:hover .message-actions,
 .wa-message.show-actions .message-actions {
-    opacity: 1;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .action-icon {
@@ -4360,24 +4425,44 @@ video.msg-media-video {
 }
 
 @media (max-width: 768px) {
+    .wa-main {
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .wa-main .wa-header {
+        position: sticky;
+        top: 0;
+        z-index: 500;
+    }
+
     .message-actions {
         position: absolute;
-        top: -35px;
+        bottom: 100%;
         right: 0;
-        background: rgba(26, 20, 16, 0.95);
-        padding: 5px 10px;
+        top: auto;
+        background: rgba(35, 45, 54, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 6px 12px;
         border-radius: 20px;
         border: 1px solid var(--color-gold-primary);
-        box-shadow: var(--shadow-md);
-        z-index: 100;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
         pointer-events: none;
         transform: translateY(10px);
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        visibility: hidden;
+        opacity: 0;
     }
 
     .wa-message.show-actions .message-actions {
         pointer-events: auto;
-        transform: translateY(0);
+        transform: translateY(-5px);
+        opacity: 1;
+        visibility: visible;
     }
 
     .wa-message.sent .message-actions {
