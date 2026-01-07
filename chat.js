@@ -2080,14 +2080,3 @@ async function voteInPoll(messageId, optionIndex) {
     }
 }
 
-// Helper to update DM thread metadata for sidebar
-async function updateDMMetadata(threadId, lastMessageText) {
-    try {
-        await firebase.firestore().collection('dm_threads').doc(threadId).update({
-            lastMessageText: lastMessageText,
-            lastMessageTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    } catch (error) {
-        console.error("Error updating DM metadata:", error);
-    }
-}
