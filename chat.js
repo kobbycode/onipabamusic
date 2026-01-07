@@ -202,6 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         messageInput.addEventListener('input', handleMentionInput);
     }
+
+    // Expose pinning and mention functions globally
+    window.pinMessage = pinMessage;
+    window.unpinMessage = unpinMessage;
+    window.handleMentionInput = handleMentionInput;
+    window.selectMention = selectMention;
+    window.openGifPicker = openGifPicker;
+    window.sendGif = sendGif;
     // Mic Button Logic
     const micBtn = document.getElementById('micBtn');
     if (micBtn) {
