@@ -3754,8 +3754,8 @@ video.msg-media-video {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background: rgba(15, 13, 11, 0.95);
     backdrop-filter: blur(20px);
     z-index: 10000;
@@ -3764,8 +3764,8 @@ video.msg-media-video {
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding-top: 100px;
+    align-items: center;
+    padding: 20px;
 }
 
 .search-modal.active {
@@ -3774,13 +3774,14 @@ video.msg-media-video {
 }
 
 .search-modal-content {
-    width: 90%;
+    width: 100%;
     max-width: 800px;
     display: flex;
     flex-direction: column;
     gap: 2rem;
     transform: translateY(20px);
     transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    text-align: center;
 }
 
 .search-modal.active .search-modal-content {
@@ -3941,7 +3942,7 @@ video.msg-media-video {
 /* Mobile Adjustments */
 @media (max-width: 768px) {
     .search-modal {
-        padding-top: 80px;
+        padding: 15px;
     }
 
     .search-input {
@@ -4064,6 +4065,7 @@ video.msg-media-video {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
 /* ==========================================
    CONTACT PAGE SOCIAL ICONS
    ========================================== */
