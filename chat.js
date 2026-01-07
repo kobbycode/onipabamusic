@@ -1020,6 +1020,21 @@ function renderMessage(msg) {
 
     const formattedText = parseMarkdown(msg.text);
 
+    // Link Preview HTML
+    let linkPreviewHtml = '';
+    if (msg.linkPreview) {
+        linkPreviewHtml = `
+            <a href="${msg.linkPreview.url}" target="_blank" class="wa-link-preview">
+                ${msg.linkPreview.image ? `<img src="${msg.linkPreview.image}" alt="Preview">` : ''}
+                <div class="wa-preview-info">
+                    <span class="wa-preview-title">${msg.linkPreview.title || 'Link'}</span>
+                    <p class="wa-preview-desc">${msg.linkPreview.description || ''}</p>
+                    <span class="wa-preview-url">${new URL(msg.linkPreview.url).hostname}</span>
+                </div>
+            </a>
+        `;
+    }
+
     messageDiv.innerHTML = `
         <span class="${isSent ? 'wa-msg-tail-out' : 'wa-msg-tail-in'}"></span>
         <div class="wa-msg-content">
@@ -1027,6 +1042,7 @@ function renderMessage(msg) {
             ${replyHtml}
             ${mediaHtml}
             ${msg.text ? `<div class="wa-msg-text-formatted">${formattedText}</div>` : ''}
+            ${linkPreviewHtml}
             <span class="wa-msg-meta">
                 <div class="message-actions">
                     ${commonActions}
@@ -1123,8 +1139,8 @@ async function handleSendMessage(e) {
             return;
         }
 
-        const userName = userData ? userData.name : user.email;
         const voicePart = userData ? userData.voicePart || 'member' : 'member';
+        const userName = userData ? userData.name : user.email;
 
         const messageData = {
             text: text,
@@ -1133,6 +1149,21 @@ async function handleSendMessage(e) {
             voicePart: voicePart,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        // Handle URL Link Preview
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const match = text.match(urlRegex);
+        if (match) {
+            const firstUrl = match[0];
+            try {
+                const previewData = await fetchLinkPreview(firstUrl);
+                if (previewData) {
+                    messageData.linkPreview = previewData;
+                }
+            } catch (err) {
+                console.warn("Link preview failed:", err);
+            }
+        }
 
         // Handle Reply
         if (replyToId) {
@@ -1702,6 +1733,30 @@ async function sendGif(url) {
     } catch (err) {
         console.error('Error sending GIF:', err);
         uiManager.showAlert('Failed to send GIF.', 'error');
+    }
+}
+
+
+// Link Preview Service
+async function fetchLinkPreview(url) {
+    try {
+        // Using microlink.io public API (free tier)
+        const response = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url));
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            return {
+                url: url,
+                title: data.data.title,
+                description: data.data.description,
+                image: data.data.image ? data.data.image.url : null
+            };
+        }
+        return null;
+    } catch (err) {
+        console.error('Link preview error:', err);
+        return null;
     }
 }
 

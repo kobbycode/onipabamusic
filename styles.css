@@ -4713,3 +4713,66 @@ video.msg-media-video {
     border-radius: 10px;
 }
 
+
+/* Link Previews */
+.wa-link-preview {
+    display: block;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin: 8px 0;
+    overflow: hidden;
+    text-decoration: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background 0.2s;
+}
+
+.wa-link-preview:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.wa-link-preview img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wa-preview-info {
+    padding: 10px 12px;
+}
+
+.wa-preview-title {
+    display: block;
+    color: var(--color-gold-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wa-preview-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin: 0 0 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.wa-preview-url {
+    font-size: 0.7rem;
+    color: var(--color-gold-primary);
+    opacity: 0.6;
+    text-transform: lowercase;
+}
+
+/* Adjust message text if it contains a link */
+.wa-msg-text-formatted a {
+    color: var(--color-gold-primary);
+    text-decoration: underline;
+}
+
