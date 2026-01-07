@@ -1736,3 +1736,75 @@ window.shareContent = async function (type, url = window.location.href, title = 
             break;
     }
 };
+
+// ==========================================
+// DYNAMIC CONTENT (Settings & Team)
+// ==========================================
+
+async function updateSocialLinks() {
+    try {
+        if (typeof firebase === 'undefined' || typeof db === 'undefined') {
+            console.warn("Firebase not initialized, cannot load social links.");
+            return;
+        }
+
+        const doc = await db.collection('settings').doc('general').get();
+        if (doc.exists) {
+            const data = doc.data();
+            const social = data.socialSettings;
+            if (social) {
+                if (document.getElementById('contact-facebook') && social.facebook) document.getElementById('contact-facebook').href = social.facebook;
+                if (document.getElementById('contact-twitter') && social.twitter) document.getElementById('contact-twitter').href = social.twitter;
+                if (document.getElementById('contact-instagram') && social.instagram) document.getElementById('contact-instagram').href = social.instagram;
+                if (document.getElementById('contact-youtube') && social.youtube) document.getElementById('contact-youtube').href = social.youtube;
+            }
+        }
+    } catch (error) {
+        console.warn("Could not load social settings:", error);
+    }
+}
+
+async function loadTeamMembers() {
+    const teamGrid = document.getElementById('teamGrid');
+    if (!teamGrid) return; // Not on about page
+
+    try {
+        if (typeof db === 'undefined') {
+            teamGrid.innerHTML = '<p style="text-align: center; color: var(--color-error);">Unable to load team members.</p>';
+            return;
+        }
+
+        const snapshot = await db.collection('team').orderBy('order').get();
+
+        if (snapshot.empty) {
+            teamGrid.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">No team members found.</p>';
+            return;
+        }
+
+        teamGrid.innerHTML = snapshot.docs.map(doc => {
+            const member = doc.data();
+            const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            return `
+            <div class="team-card">
+                ${member.image
+                    ? `<img src="${member.image}" alt="${member.name}" class="team-avatar-img" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; border: 2px solid var(--color-gold-primary);">`
+                    : `<div class="team-avatar">${initials}</div>`
+                }
+                <div class="team-name">${member.name}</div>
+                <div class="team-role">${member.role}</div>
+            </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error("Error loading team members:", error);
+        teamGrid.innerHTML = '<p style="text-align: center;">Our team is loading...</p>';
+    }
+}
+
+// Initialize Dynamic Content
+document.addEventListener('DOMContentLoaded', () => {
+    updateSocialLinks();
+    loadTeamMembers();
+});
