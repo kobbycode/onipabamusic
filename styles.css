@@ -4896,3 +4896,148 @@ video.msg-media-video {
     font-weight: 600;
 }
 
+
+/* Community Polls */
+.wa-poll-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 10px 0;
+    min-width: 250px;
+    max-width: 100%;
+}
+
+.wa-poll-question {
+    color: #fff;
+    font-size: 1rem;
+    margin: 0 0 15px;
+    font-weight: 600;
+}
+
+.wa-poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wa-poll-option {
+    position: relative;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s;
+    border: 1px solid transparent;
+}
+
+.wa-poll-option:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.wa-poll-option.voted {
+    border-color: var(--color-gold-primary);
+}
+
+.wa-poll-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(212, 175, 55, 0.2);
+    z-index: 1;
+    transition: width 0.5s ease-out;
+}
+
+.wa-poll-opt-text {
+    position: relative;
+    z-index: 2;
+    color: #e9edef;
+    font-size: 0.9rem;
+}
+
+.wa-poll-opt-count {
+    position: relative;
+    z-index: 2;
+    color: var(--color-gold-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.wa-poll-footer {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: right;
+}
+
+/* Poll Form in Modal */
+.wa-poll-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 10px;
+}
+
+.wa-poll-form input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.wa-poll-form input#pollQuestion {
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-gold-primary);
+}
+
+.wa-poll-form input:focus {
+    border-color: var(--color-gold-primary);
+}
+
+#pollOptionsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wa-add-option-btn {
+    background: transparent;
+    border: 1px dashed var(--color-gold-primary);
+    color: var(--color-gold-primary);
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.wa-add-option-btn:hover {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.wa-submit-poll-btn {
+    background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wa-submit-poll-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+

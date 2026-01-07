@@ -210,6 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.selectMention = selectMention;
     window.openGifPicker = openGifPicker;
     window.sendGif = sendGif;
+    window.openPollModal = openPollModal;
+    window.addPollOption = addPollOption;
+    window.createPoll = createPoll;
+    window.voteInPoll = voteInPoll;
     // Mic Button Logic
     const micBtn = document.getElementById('micBtn');
     if (micBtn) {
@@ -1072,6 +1076,7 @@ function renderMessage(msg) {
             ${replyHtml}
             ${mediaHtml}
             ${msg.text ? `<div class="wa-msg-text-formatted">${formattedText}</div>` : ''}
+            ${msg.type === 'poll' ? renderPollHtml(msg) : ''}
             ${linkPreviewHtml}
             <span class="wa-msg-meta">
                 <div class="message-actions">
@@ -1857,6 +1862,38 @@ function updatePinnedBanner(data) {
     }
 }
 
+function renderPollHtml(msg) {
+    const totalVotes = msg.options.reduce((acc, opt) => acc + opt.votes.length, 0);
+    const user = firebase.auth().currentUser;
+    const userId = user ? user.uid : '';
+
+    let optionsHtml = '';
+    msg.options.forEach((opt, index) => {
+        const percent = totalVotes > 0 ? Math.round((opt.votes.length / totalVotes) * 100) : 0;
+        const hasVoted = opt.votes.includes(userId);
+
+        optionsHtml += `
+            <div class="wa-poll-option ${hasVoted ? 'voted' : ''}" onclick="voteInPoll('${msg.id}', ${index})">
+                <div class="wa-poll-bg" style="width: ${percent}%"></div>
+                <span class="wa-poll-opt-text">${opt.text}</span>
+                <span class="wa-poll-opt-count">${opt.votes.length} (${percent}%)</span>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="wa-poll-card">
+            <h4 class="wa-poll-question">${msg.question}</h4>
+            <div class="wa-poll-options">
+                ${optionsHtml}
+            </div>
+            <div class="wa-poll-footer">
+                <span>${totalVotes} votes</span>
+            </div>
+        </div>
+    `;
+}
+
 // User Mentions Logic
 let mentionRange = null;
 
@@ -1932,5 +1969,103 @@ function hideMentions() {
     const list = document.getElementById('mentionsList');
     if (list) list.style.display = 'none';
     mentionRange = null;
+}
+
+// Community Polls Logic
+function openPollModal() {
+    const modal = document.getElementById('pollModal');
+    modal.classList.add('active');
+    document.getElementById('pollQuestion').value = '';
+    const container = document.getElementById('pollOptionsContainer');
+    container.innerHTML = `
+        <input type="text" class="wa-poll-option-input" placeholder="Option 1">
+        <input type="text" class="wa-poll-option-input" placeholder="Option 2">
+    `;
+}
+
+function addPollOption() {
+    const container = document.getElementById('pollOptionsContainer');
+    if (container.children.length >= 10) return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'wa-poll-option-input';
+    input.placeholder = 'Option ' + (container.children.length + 1);
+    container.appendChild(input);
+}
+
+async function createPoll() {
+    const question = document.getElementById('pollQuestion').value.trim();
+    const optionInputs = document.querySelectorAll('.wa-poll-option-input');
+    const options = [];
+
+    optionInputs.forEach(input => {
+        const val = input.value.trim();
+        if (val) options.push({ text: val, votes: [] });
+    });
+
+    if (!question || options.length < 2) {
+        uiManager.showAlert('Please provide a question and at least 2 options.', 'error');
+        return;
+    }
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    try {
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const userData = userDoc.data();
+
+        const collectionPath = isDM ?
+            firebase.firestore().collection('dm_threads').doc(currentChannel).collection('messages') :
+            firebase.firestore().collection('chats').doc(currentChannel).collection('messages');
+
+        await collectionPath.add({
+            type: 'poll',
+            question: question,
+            options: options,
+            userId: user.uid,
+            userName: userData ? userData.name : user.email,
+            voicePart: userData ? userData.voicePart || 'member' : 'member',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById('pollModal').classList.remove('active');
+    } catch (err) {
+        console.error('Create poll error:', err);
+        uiManager.showAlert('Failed to create poll.', 'error');
+    }
+}
+
+async function voteInPoll(messageId, optionIndex) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const collectionPath = isDM ?
+        firebase.firestore().collection('dm_threads').doc(currentChannel).collection('messages') :
+        firebase.firestore().collection('chats').doc(currentChannel).collection('messages');
+
+    try {
+        const docRef = collectionPath.doc(messageId);
+        await firebase.firestore().runTransaction(async (transaction) => {
+            const doc = await transaction.get(docRef);
+            if (!doc.exists) return;
+
+            const data = doc.data();
+            const options = data.options;
+
+            // Remove user from any existing option
+            options.forEach(opt => {
+                const idx = opt.votes.indexOf(user.uid);
+                if (idx > -1) opt.votes.splice(idx, 1);
+            });
+
+            // Add user to new option
+            options[optionIndex].votes.push(user.uid);
+
+            transaction.update(docRef, { options: options });
+        });
+    } catch (err) {
+        console.error('Vote error:', err);
+    }
 }
 
