@@ -5048,6 +5048,15 @@ video.msg-media-video {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Fix overlap with metadata */
+.wa-poll-card+.wa-msg-meta {
+    margin-top: 4px !important;
+    float: none !important;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
 .wa-poll-question {
     color: #ffffff;
     font-size: 1.05rem;
