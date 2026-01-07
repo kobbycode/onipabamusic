@@ -139,6 +139,15 @@
                 </svg>
                 Website Settings
             </a>
+            <a href="#team" class="admin-nav-link" data-section="team">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M13 6C13 7.65685 11.6569 9 10 9C8.34315 9 7 7.65685 7 6C7 4.34315 8.34315 3 10 3C11.6569 3 13 4.34315 13 6Z" />
+                    <path
+                        d="M10 11.4938C6.98317 11.4938 4.35249 13.4326 3.42531 16.1966C3.33383 16.4693 3.55169 16.7469 3.84065 16.7469H16.1594C16.4484 16.7469 16.6662 16.4693 16.5747 16.1966C15.6475 13.4326 13.0169 11.4938 10 11.4938Z" />
+                </svg>
+                Manage Team
+            </a>
         </nav>
     </aside>
 
@@ -677,6 +686,81 @@
                 </div>
             </div>
 
+            <!-- Team Management Section -->
+            <div id="admin-team" class="admin-section" style="display: none;">
+                <div class="admin-content-header">
+                    <h2 class="admin-section-title">Manage Team</h2>
+                    <button class="btn-admin-primary" onclick="showTeamForm()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <line x1="10" y1="5" x2="10" y2="15" stroke-width="2" stroke-linecap="round" />
+                            <line x1="5" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add Team Member
+                    </button>
+                </div>
+
+                <!-- Team Form -->
+                <div id="teamForm" class="admin-form" style="display: none;">
+                    <h3 class="form-title" id="teamFormTitle">Add Team Member</h3>
+                    <form id="teamFormElement" onsubmit="saveTeamMember(event)">
+                        <input type="hidden" id="teamIndex" value="">
+                        <input type="hidden" id="teamId" value="">
+                        <input type="hidden" id="teamImageUrl" value="">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="teamName">Name *</label>
+                                <input type="text" id="teamName" required placeholder="e.g., Japhet Mireku">
+                            </div>
+                            <div class="form-group">
+                                <label for="teamRole">Role *</label>
+                                <input type="text" id="teamRole" required placeholder="e.g., Music Director">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teamOrder">Display Order</label>
+                            <input type="number" id="teamOrder" placeholder="Lower numbers appear first">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teamImageFile">Profile Image</label>
+                            <input type="file" id="teamImageFile" accept="image/*">
+                            <small
+                                style="color: var(--color-text-secondary); display: block; margin-top: 0.5rem;">Square
+                                image recommended</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin-primary">Save Member</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hideTeamForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Team List -->
+                <div id="teamList" class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Order</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamTableBody">
+                            <!-- Team members will be inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="teamEmptyState" class="empty-state">
+                        <p>No team members yet</p>
+                        <button class="btn-admin-primary" onclick="showTeamForm()">Add First Member</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Users Management Section (Super Admin Only) -->
             <div id="admin-users" class="admin-section superadmin-only" style="display: none;">
                 <h2 class="admin-section-title">User Management</h2>
@@ -955,6 +1039,7 @@
     <script type="module" src="admin-chat.js"></script>
     <script type="module" src="admin-file-uploads.js"></script>
     <script type="module" src="admin-notifications.js"></script>
+    <script type="module" src="admin-team.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 

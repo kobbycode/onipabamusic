@@ -43,6 +43,7 @@ export class AuthManager {
                     let doc = await this.db.collection('users').doc(user.uid).get();
 
                     if (doc.exists) {
+                        this.userData = doc.data();
                         this.userRole = (doc.data().role || 'member').toLowerCase();
                         console.log('[AuthManager] Role found via UID:', this.userRole);
                     } else {
@@ -54,6 +55,7 @@ export class AuthManager {
 
                         if (!snapshot.empty) {
                             // If multiple found, prioritize highest role
+                            this.userData = snapshot.docs[0].data();
                             const roles = snapshot.docs.map(d => (d.data().role || 'member').toLowerCase());
                             if (roles.includes('superadmin')) this.userRole = 'superadmin';
                             else if (roles.includes('admin')) this.userRole = 'admin';
@@ -63,6 +65,7 @@ export class AuthManager {
                         } else {
                             console.warn('[AuthManager] No user profile found via UID or Email.');
                             this.userRole = 'member';
+                            this.userData = { name: user.email.split('@')[0] };
                         }
                     }
                     this.finishInit(true);
@@ -73,6 +76,7 @@ export class AuthManager {
                 }
             } else {
                 this.user = null;
+                this.userData = null;
                 this.userRole = null;
                 this.finishInit(false);
             }
@@ -154,15 +158,17 @@ export class AuthManager {
 
         // Update Header Button
         const loginBtn = document.querySelector('.btn-login');
-        if (loginBtn) {
+        if (loginBtn && this.user) {
+            const displayName = (this.userData && this.userData.name) || this.user.displayName || this.user.email.split('@')[0];
+            const initial = displayName.charAt(0).toUpperCase();
+
             loginBtn.innerHTML = `
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-                    <circle cx="10" cy="6" r="4" stroke-width="1.5" />
-                    <path d="M4 18C4 14.6863 6.68629 12 10 12C13.3137 12 16 14.6863 16 18" stroke-width="1.5" stroke-linecap="round" />
-                </svg>
-                Profile
+                <div class="user-avatar-small">${initial}</div>
+                <span class="user-name-small">${displayName.split(' ')[0]}</span>
             `;
+            loginBtn.classList.add('logged-in');
             loginBtn.href = 'profile.html';
+            loginBtn.style.padding = '0.25rem 0.75rem 0.25rem 0.25rem';
         }
 
         // Init Profile Page specific logic

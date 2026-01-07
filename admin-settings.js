@@ -100,17 +100,43 @@ function renderNavLinks() {
     `).join('');
 }
 
+// Tab Switching logic
+window.switchSettingsTab = function (tabName) {
+    // Buttons
+    document.querySelectorAll('#admin-settings .admin-tab').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick').includes(tabName)) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Content
+    document.querySelectorAll('#admin-settings .settings-tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    document.getElementById(`settings-${tabName}`).style.display = 'block';
+};
+
 // ==========================================
-// WEBSITE SETTINGS - FOOTER MANAGEMENT
+// WEBSITE SETTINGS - FOOTER & SOCIAL MANAGEMENT
 // ==========================================
 
-// Load Footer Settings into Form
-function loadFooterSettings() {
+// Load Settings (Footer & Social)
+function loadSettings() {
+    // Footer Settings
     if (contentData.footerSettings) {
         document.getElementById('footerTitle').value = contentData.footerSettings.title || '';
         document.getElementById('footerDescription').value = contentData.footerSettings.description || '';
         document.getElementById('footerNewsletter').value = contentData.footerSettings.newsletter || '';
         document.getElementById('footerCopyright').value = contentData.footerSettings.copyright || '';
+    }
+
+    // Social Settings
+    if (contentData.socialSettings) {
+        document.getElementById('socialFacebook').value = contentData.socialSettings.facebook || '';
+        document.getElementById('socialTwitter').value = contentData.socialSettings.twitter || '';
+        document.getElementById('socialInstagram').value = contentData.socialSettings.instagram || '';
+        document.getElementById('socialYoutube').value = contentData.socialSettings.youtube || '';
     }
 }
 
@@ -129,20 +155,77 @@ function saveFooterSettings(event) {
     uiManager.showAlert('Footer settings saved successfully!', 'success');
 }
 
+// Save Social Settings
+window.saveSocialSettings = function (event) {
+    event.preventDefault();
+
+    contentData.socialSettings = {
+        facebook: document.getElementById('socialFacebook').value,
+        twitter: document.getElementById('socialTwitter').value,
+        instagram: document.getElementById('socialInstagram').value,
+        youtube: document.getElementById('socialYoutube').value
+    };
+
+    saveContentData();
+    uiManager.showAlert('Social media links saved successfully!', 'success');
+};
+
+// Helper to save content data to Firestore
+async function saveContentData() {
+    try {
+        const batch = db.batch();
+        const settingsRef = db.collection('settings').doc('general');
+
+        // Prepare data
+        const data = {};
+        if (contentData.footerSettings) data.footerSettings = contentData.footerSettings;
+        if (contentData.socialSettings) data.socialSettings = contentData.socialSettings;
+        if (contentData.navLinks) data.navLinks = contentData.navLinks;
+
+        batch.set(settingsRef, data, { merge: true });
+        await batch.commit();
+        console.log('Settings saved to Firestore');
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        uiManager.showAlert('Failed to save settings: ' + error.message, 'error');
+    }
+}
+
 // Initialize Website Settings on section load
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     // Nav Links
     const settingsLink = document.querySelector('[data-section="settings"]');
     if (settingsLink) {
-        settingsLink.addEventListener('click', function () {
+        settingsLink.addEventListener('click', async function () {
+            // Load settings from Firestore if not already loaded
+            if (!contentData.footerSettings || !contentData.socialSettings) {
+                try {
+                    const doc = await db.collection('settings').doc('general').get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        contentData.footerSettings = data.footerSettings || {};
+                        contentData.socialSettings = data.socialSettings || {};
+                        contentData.navLinks = data.navLinks || [];
+                    }
+                } catch (e) {
+                    console.error("Error loading initial settings:", e);
+                }
+            }
             renderNavLinks();
-            loadFooterSettings();
+            loadSettings();
         });
     }
 
     // Initial render if on settings section
     if (window.location.hash === '#settings') {
+        const doc = await db.collection('settings').doc('general').get();
+        if (doc.exists) {
+            const data = doc.data();
+            contentData.footerSettings = data.footerSettings || {};
+            contentData.socialSettings = data.socialSettings || {};
+            contentData.navLinks = data.navLinks || [];
+        }
         renderNavLinks();
-        loadFooterSettings();
+        loadSettings();
     }
 });
