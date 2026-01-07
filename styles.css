@@ -4627,3 +4627,49 @@ video.msg-media-video {
     color: var(--color-gold-primary);
 }
 
+
+/* Markdown Styling */
+.wa-msg-text-formatted {
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.wa-msg-text-formatted strong {
+    color: #fff;
+    font-weight: 700;
+}
+
+.wa-msg-text-formatted em {
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.wa-msg-text-formatted del {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.wa-msg-text-formatted code {
+    background: rgba(212, 175, 55, 0.15);
+    color: var(--color-gold-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", "Fira Code", monospace;
+    font-size: 0.9em;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.wa-msg-text-formatted blockquote {
+    margin: 8px 0;
+    padding: 8px 15px;
+    border-left: 3px solid var(--color-gold-primary);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 4px 4px 0;
+    font-style: italic;
+    color: var(--color-text-muted);
+}
+
+/* Ensure paragraph-like behavior for formatted div if none exist */
+.wa-msg-text-formatted > *:first-child { margin-top: 0; }
+.wa-msg-text-formatted > *:last-child { margin-bottom: 0; }
+

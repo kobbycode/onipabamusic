@@ -891,6 +891,39 @@ function listenForMessages(channelId) {
 }
 
 // Render Single Message
+// Helper to escape HTML and prevent XSS
+function escapeHTML(str) {
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
+}
+
+// Simple Markdown Parser
+function parseMarkdown(text) {
+    if (!text) return '';
+
+    let html = escapeHTML(text);
+
+    // Bold: **text** or __text__
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+    // Italic: *text* or _text_
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+    // Strikethrough: ~~text~~
+    html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+    // Inline Code: `text`
+    html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+    // Blockquote: > text (at start of line or string)
+    html = html.replace(/^&gt;\s+(.*)$/gm, '<blockquote>$1</blockquote>');
+
+    return html;
+}
+
 function renderMessage(msg) {
     const container = document.getElementById('chatMessages');
     const currentUser = firebase.auth().currentUser;
@@ -925,24 +958,25 @@ function renderMessage(msg) {
         badgeHtml = `<span class="voice-badge badge-${msg.voicePart}">${partLabel}</span>`;
     }
 
-    // Reactions HTML
+    // Reactions rendering
     let reactionsHtml = '';
-    if (msg.reactions) {
+    if (msg.reactions && Object.keys(msg.reactions).length > 0) {
         reactionsHtml = '<div class="message-reactions">';
-        Object.entries(msg.reactions).forEach(([emoji, uids]) => {
-            if (uids && uids.length > 0) {
-                const hasReacted = currentUser && uids.includes(currentUser.uid);
+        for (const [emoji, uids] of Object.entries(msg.reactions)) {
+            if (uids.length > 0) {
+                const active = currentUser && uids.includes(currentUser.uid) ? 'active' : '';
                 reactionsHtml += `
-                    <div class="reaction-bubble ${hasReacted ? 'active' : ''}" onclick="toggleReaction('${msg.id}', '${emoji}')">
-                        <span class="emoji">${emoji}</span>
-                        <span class="count">${uids.length}</span>
+                    <div class="reaction-badge ${active}" onclick="toggleReaction('${msg.id}', '${emoji}')">
+                        <span class="reaction-emoji">${emoji}</span>
+                        <span class="reaction-count">${uids.length}</span>
                     </div>
                 `;
             }
-        });
+        }
         reactionsHtml += '</div>';
     }
 
+    // Actions
     const adminActions = isAdmin ? `
         <span class="material-icons action-icon" onclick="deleteMessage('${msg.id}')" title="Delete">delete</span>
     ` : '';
@@ -955,7 +989,7 @@ function renderMessage(msg) {
         <span class="material-icons action-icon" onclick="initReply('${msg.id}')" title="Reply">reply</span>
     `;
 
-    // Media Content
+    // Media rendering
     let mediaHtml = '';
     if (msg.mediaUrl) {
         switch (msg.mediaType) {
@@ -966,15 +1000,25 @@ function renderMessage(msg) {
                 mediaHtml = `<div class="msg-media"><video controls class="msg-media-video"><source src="${msg.mediaUrl}">Your browser does not support video.</video></div>`;
                 break;
             case 'audio':
-                mediaHtml = `<div class="msg-media"><audio controls><source src="${msg.mediaUrl}">Your browser does not support audio.</audio></div>`;
+                mediaHtml = `
+                    <div class="msg-media-audio">
+                        <span class="material-icons">play_circle</span>
+                        <audio controls><source src="${msg.mediaUrl}"></audio>
+                    </div>
+                `;
                 break;
+            case 'file':
             default:
-                mediaHtml = `<div class="msg-media" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 6px; margin-bottom: 0.5rem;">
-                    <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem;">attach_file</span>
-                    <a href="${msg.mediaUrl}" target="_blank" style="color: var(--color-gold-primary); text-decoration: none;">${msg.fileName || 'Download File'}</a>
-                </div>`;
+                mediaHtml = `
+                    <div class="msg-media-file">
+                        <span class="material-icons">description</span>
+                        <a href="${msg.mediaUrl}" target="_blank">${msg.fileName || 'Attached File'}</a>
+                    </div>
+                `;
         }
     }
+
+    const formattedText = parseMarkdown(msg.text);
 
     messageDiv.innerHTML = `
         <span class="${isSent ? 'wa-msg-tail-out' : 'wa-msg-tail-in'}"></span>
@@ -982,7 +1026,7 @@ function renderMessage(msg) {
             ${!isSent ? `<span class="wa-msg-author">${msg.userName || 'Member'} ${badgeHtml}</span>` : (badgeHtml ? `<div style="margin-bottom: 2px; text-align: right; opacity: 0.9;">${badgeHtml}</div>` : '')}
             ${replyHtml}
             ${mediaHtml}
-            ${msg.text ? `<p>${msg.text}</p>` : ''}
+            ${msg.text ? `<div class="wa-msg-text-formatted">${formattedText}</div>` : ''}
             <span class="wa-msg-meta">
                 <div class="message-actions">
                     ${commonActions}
