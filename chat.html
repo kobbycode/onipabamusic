@@ -149,7 +149,18 @@
                 </div>
             </div>
 
+            <div id="typingIndicator" class="typing-indicator-bar"></div>
+
             <form class="wa-footer" id="chatForm">
+                <!-- Reply Preview -->
+                <div id="replyPreview" class="wa-reply-preview">
+                    <div class="reply-content">
+                        <span id="replyToUser" class="reply-user"></span>
+                        <p id="replyToText" class="reply-text"></p>
+                    </div>
+                    <span class="material-icons close-reply" onclick="cancelReply()">close</span>
+                </div>
+
                 <input type="file" id="fileAttachment" accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
                     style="display: none;" multiple>
 
@@ -180,7 +191,8 @@
                 <div class="wa-input-wrapper">
                     <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off">
                 </div>
-                <button type="submit" style="background: none; border: none; padding: 0;">
+                <span class="material-icons wa-footer-icon" id="micBtn" title="Record Voice">mic</span>
+                <button type="submit" class="wa-send-btn">
                     <span class="material-icons wa-icon-btn" style="color: #128C7E;">send</span>
                 </button>
             </form>

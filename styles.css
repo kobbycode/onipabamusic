@@ -4162,3 +4162,245 @@ video.msg-media-video {
     height: 20px;
     fill: currentColor;
 }
+
+/* Modern Chat Feature Styles */
+.typing-indicator-bar {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    color: var(--color-gold-primary);
+    background: rgba(26, 20, 16, 0.8);
+    font-style: italic;
+    opacity: 0;
+    transition: all 0.3s ease;
+    height: 0;
+    overflow: hidden;
+}
+
+.typing-indicator-bar.active {
+    opacity: 1;
+    height: auto;
+    padding: 8px 16px;
+}
+
+.wa-reply-preview {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--color-bg-tertiary);
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 10px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+    animation: slideUp 0.2s ease-out;
+}
+
+.wa-reply-preview.active {
+    display: flex;
+}
+
+.reply-content {
+    flex: 1;
+    border-left: 4px solid var(--color-gold-primary);
+    padding-left: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    min-width: 0;
+}
+
+.reply-user {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-gold-primary);
+}
+
+.reply-text {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 !important;
+}
+
+.close-reply {
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 20px !important;
+}
+
+.close-reply:hover {
+    color: #fff;
+}
+
+/* Presence Styles */
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.status-online {
+    background-color: #22c55e;
+    box-shadow: 0 0 8px #22c55e66;
+}
+
+.status-offline {
+    background-color: #64748b;
+}
+
+/* Message enhancements - Premium Gold for Sent */
+.wa-message.sent {
+    background: linear-gradient(135deg, #c5a059 0%, #a68245 100%) !important;
+    color: #000 !important;
+    font-weight: 500;
+    border: none !important;
+}
+
+.wa-message.sent p {
+    color: inherit !important;
+}
+
+.wa-message.sent .voice-badge {
+    background: rgba(0, 0, 0, 0.15);
+    color: #000;
+}
+
+.wa-message.sent .wa-msg-author {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.wa-message.sent .wa-msg-time {
+    color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.wa-message.sent .wa-msg-check {
+    color: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Reply Quote Styles */
+.message-quote {
+    background: rgba(0, 0, 0, 0.1);
+    border-left: 3px solid var(--color-gold-primary);
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.message-quote:hover {
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.quote-user {
+    display: block;
+    font-weight: 600;
+    color: var(--color-gold-primary);
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+}
+
+.quote-text {
+    margin: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.8;
+}
+
+/* Action Icons */
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-right: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.wa-message:hover .message-actions {
+    opacity: 1;
+}
+
+.action-icon {
+    font-size: 16px !important;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: color 0.2s, transform 0.2s;
+}
+
+.action-icon:hover {
+    color: var(--color-gold-primary);
+    transform: scale(1.2);
+}
+
+.wa-message.sent .action-icon {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.wa-message.sent .action-icon:hover {
+    color: #000;
+}
+
+.edited-tag {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-left: 4px;
+}
+/* Lightbox Styles */
+.wa-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.wa-lightbox.active {
+    display: flex;
+    opacity: 1;
+}
+
+.wa-lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+    transform: scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.wa-lightbox.active img {
+    transform: scale(1);
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    color: #fff;
+    font-size: 32px !important;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.lightbox-close:hover {
+    transform: rotate(90deg) scale(1.2);
+    color: var(--color-gold-primary);
+}
+

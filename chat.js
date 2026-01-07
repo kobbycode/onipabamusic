@@ -2,14 +2,25 @@
 
 let currentChannel = 'general';
 let unsubscribeMessages = null;
+let unsubscribeTyping = null;
 let isAdmin = false;
 let allChannels = {};
+let typingTimeout = null;
+let replyToId = null;
+let editingMessageId = null;
+let mediaRecorder = null;
+let audioChunks = [];
 
 // Expose these to global scope because they are called via onclick in generated HTML
 window.deleteMessage = (id) => deleteMessage(id);
+window.editMessage = (id) => editMessage(id);
+window.initReply = (id) => initReply(id);
+window.cancelReply = () => cancelReply();
 window.toggleReaction = (id, emoji) => toggleReaction(id, emoji);
 window.showEmojiPicker = (event, id) => showEmojiPicker(event, id);
 window.switchChannel = (id, el) => switchChannel(id, el);
+window.openLightbox = (url) => openLightbox(url);
+window.closeLightbox = () => closeLightbox();
 
 // Initialize Chat
 document.addEventListener('DOMContentLoaded', () => {
@@ -152,6 +163,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Typing Indicator Trigger
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.addEventListener('input', handleTyping);
+    }
+    // Mic Button placeholder
+    const micBtn = document.getElementById('micBtn');
+    if (micBtn) {
+        micBtn.addEventListener('click', () => {
+            uiManager.showAlert("Voice notes are coming soon to Onipaba Music!", 'info');
+        });
+    }
+
     // Chat Search Functionality
     const searchBtn = document.getElementById('chatSearchBtn');
     const searchBar = document.getElementById('chatSearchBar');
@@ -482,6 +507,64 @@ function switchChannel(channelId, element) {
 
     // Listen for Messages
     listenForMessages(channelId);
+
+    // Listen for Typing
+    listenForTyping(channelId);
+}
+
+// Typing Indicator Handler
+function handleTyping() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    // Update typing status in Firestore
+    const typingRef = firebase.firestore().collection('channels').doc(currentChannel);
+    typingRef.update({
+        [`typing.${user.uid}`]: {
+            name: document.getElementById('currentUserAvatar').title || user.displayName || 'Someone',
+            timestamp: Date.now()
+        }
+    });
+
+    typingTimeout = setTimeout(() => {
+        typingRef.update({
+            [`typing.${user.uid}`]: firebase.firestore.FieldValue.delete()
+        });
+    }, 3000);
+}
+
+// Listen for Typing Indicators
+function listenForTyping(channelId) {
+    if (unsubscribeTyping) unsubscribeTyping();
+
+    const indicatorEl = document.getElementById('typingIndicator');
+    if (!indicatorEl) return;
+
+    unsubscribeTyping = firebase.firestore().collection('channels').doc(channelId)
+        .onSnapshot((doc) => {
+            const data = doc.data();
+            const typing = data ? data.typing || {} : {};
+            const user = firebase.auth().currentUser;
+
+            const typingNames = Object.entries(typing)
+                .filter(([uid, info]) => uid !== (user ? user.uid : '') && (Date.now() - info.timestamp < 5000))
+                .map(([uid, info]) => info.name);
+
+            if (typingNames.length > 0) {
+                let text = '';
+                if (typingNames.length === 1) text = `${typingNames[0]} is typing...`;
+                else if (typingNames.length === 2) text = `${typingNames[0]} and ${typingNames[1]} are typing...`;
+                else text = 'Several people are typing...';
+
+                indicatorEl.textContent = text;
+                indicatorEl.classList.add('active');
+            } else {
+                indicatorEl.classList.remove('active');
+                indicatorEl.textContent = '';
+            }
+        });
 }
 
 // Listen for Messages (Real-time)
@@ -527,8 +610,20 @@ function renderMessage(msg) {
     messageDiv.className = `wa-message ${isSent ? 'sent' : 'received'}`;
     messageDiv.dataset.id = msg.id;
 
+    // Quoted Reply HTML
+    let replyHtml = '';
+    if (msg.replyTo) {
+        replyHtml = `
+            <div class="message-quote" onclick="scrollToMessage('${msg.replyTo.id}')">
+                <span class="quote-user">${msg.replyTo.userName}</span>
+                <p class="quote-text">${msg.replyTo.text}</p>
+            </div>
+        `;
+    }
+
     // Format Time
     const time = msg.timestamp ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...';
+    const editedHtml = msg.isEdited ? '<span class="edited-tag">(edited)</span>' : '';
 
     // Badge styling
     let badgeHtml = '';
@@ -555,16 +650,24 @@ function renderMessage(msg) {
         reactionsHtml += '</div>';
     }
 
-    const adminHtml = isAdmin ? `
-        <span class="material-icons chat-admin-delete" onclick="deleteMessage('${msg.id}')" title="Delete Message">delete</span>
+    const adminActions = isAdmin ? `
+        <span class="material-icons action-icon" onclick="deleteMessage('${msg.id}')" title="Delete">delete</span>
     ` : '';
+
+    const userActions = isSent ? `
+        <span class="material-icons action-icon" onclick="editMessage('${msg.id}')" title="Edit">edit</span>
+    ` : '';
+
+    const commonActions = `
+        <span class="material-icons action-icon" onclick="initReply('${msg.id}')" title="Reply">reply</span>
+    `;
 
     // Media Content
     let mediaHtml = '';
     if (msg.mediaUrl) {
         switch (msg.mediaType) {
             case 'image':
-                mediaHtml = `<div class="msg-media"><img src="${msg.mediaUrl}" alt="${msg.fileName || 'Image'}" style="max-width: 300px; max-height: 300px; border-radius: 8px; cursor: pointer;" onclick="window.open('${msg.mediaUrl}', '_blank')"></div>`;
+                mediaHtml = `<div class="msg-media"><img src="${msg.mediaUrl}" alt="${msg.fileName || 'Image'}" style="max-width: 300px; max-height: 300px; border-radius: 8px; cursor: pointer;" onclick="openLightbox('${msg.mediaUrl}')"></div>`;
                 break;
             case 'video':
                 mediaHtml = `<div class="msg-media"><video controls class="msg-media-video"><source src="${msg.mediaUrl}">Your browser does not support video.</video></div>`;
@@ -584,11 +687,16 @@ function renderMessage(msg) {
         <span class="${isSent ? 'wa-msg-tail-out' : 'wa-msg-tail-in'}"></span>
         <div class="wa-msg-content">
             ${!isSent ? `<span class="wa-msg-author">${msg.userName || 'Member'} ${badgeHtml}</span>` : (badgeHtml ? `<div style="margin-bottom: 2px; text-align: right; opacity: 0.9;">${badgeHtml}</div>` : '')}
+            ${replyHtml}
             ${mediaHtml}
             ${msg.text ? `<p>${msg.text}</p>` : ''}
             <span class="wa-msg-meta">
-                ${adminHtml}
-                <span class="wa-msg-time">${time}</span>
+                <div class="message-actions">
+                    ${commonActions}
+                    ${userActions}
+                    ${adminActions}
+                </div>
+                <span class="wa-msg-time">${time} ${editedHtml}</span>
                 ${isSent ? '<span class="material-icons wa-msg-check">done_all</span>' : ''}
             </span>
             ${reactionsHtml}
@@ -601,6 +709,37 @@ function renderMessage(msg) {
     container.appendChild(messageDiv);
 }
 
+// Message Reply Functions
+function initReply(messageId) {
+    const msgEl = document.querySelector(`.wa-message[data-id="${messageId}"]`);
+    if (!msgEl) return;
+
+    const author = msgEl.querySelector('.wa-msg-author')?.textContent.split(' ')[0] ||
+        (msgEl.classList.contains('sent') ? 'You' : 'Member');
+    const text = msgEl.querySelector('p')?.textContent || 'Media';
+
+    replyToId = messageId;
+
+    document.getElementById('replyToUser').textContent = author;
+    document.getElementById('replyToText').textContent = text;
+    document.getElementById('replyPreview').classList.add('active');
+    document.getElementById('messageInput').focus();
+}
+
+function cancelReply() {
+    replyToId = null;
+    document.getElementById('replyPreview').classList.remove('active');
+}
+
+window.scrollToMessage = function (id) {
+    const el = document.querySelector(`.wa-message[data-id="${id}"]`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.background = 'rgba(212, 175, 55, 0.2)';
+        setTimeout(() => el.style.background = '', 2000);
+    }
+};
+
 // Send Message
 async function handleSendMessage(e) {
     e.preventDefault();
@@ -609,7 +748,7 @@ async function handleSendMessage(e) {
     const text = input.value.trim();
     const user = firebase.auth().currentUser;
 
-    if (!text) return;
+    if (!text && !replyToId) return;
 
     if (!user) {
         uiManager.showAlert("Please login to join the chat!", 'error');
@@ -618,6 +757,23 @@ async function handleSendMessage(e) {
     }
 
     try {
+        if (editingMessageId) {
+            await firebase.firestore().collection('chats')
+                .doc(currentChannel)
+                .collection('messages')
+                .doc(editingMessageId)
+                .update({
+                    text: text,
+                    isEdited: true,
+                    editedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+            editingMessageId = null;
+            input.value = '';
+            input.placeholder = 'Type a message';
+            return;
+        }
+
         // Get user data from Firestore for the name and voice part
         const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
         const userData = userDoc.data();
@@ -630,17 +786,31 @@ async function handleSendMessage(e) {
         const userName = userData ? userData.name : user.email;
         const voicePart = userData ? userData.voicePart || 'member' : 'member';
 
+        const messageData = {
+            text: text,
+            userId: user.uid,
+            userName: userName,
+            voicePart: voicePart,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Handle Reply
+        if (replyToId) {
+            const replyToText = document.getElementById('replyToText').textContent;
+            const replyToUserName = document.getElementById('replyToUser').textContent;
+            messageData.replyTo = {
+                id: replyToId,
+                text: replyToText,
+                userName: replyToUserName
+            };
+            cancelReply();
+        }
+
         // Add to Firestore
         await firebase.firestore().collection('chats')
             .doc(currentChannel)
             .collection('messages')
-            .add({
-                text: text,
-                userId: user.uid,
-                userName: userName,
-                voicePart: voicePart,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            .add(messageData);
 
         input.value = '';
     } catch (error) {
@@ -714,18 +884,38 @@ function showEmojiPicker(event, messageId) {
     document.addEventListener('click', () => picker.remove(), { once: true });
 }
 
-// Delete Message (Admin Only)
+// Edit Message
+function editMessage(messageId) {
+    const msgEl = document.querySelector(`.wa-message[data-id="${messageId}"]`);
+    if (!msgEl) return;
+
+    const text = msgEl.querySelector('p')?.textContent;
+    if (!text) return;
+
+    editingMessageId = messageId;
+    const input = document.getElementById('messageInput');
+    input.value = text;
+    input.placeholder = 'Editing message...';
+    input.focus();
+}
+
+// Delete Message (Admin Only or Self)
 async function deleteMessage(messageId) {
-    if (!isAdmin) return;
+    const user = firebase.auth().currentUser;
+    const msgRef = firebase.firestore().collection('chats')
+        .doc(currentChannel)
+        .collection('messages')
+        .doc(messageId);
+
+    const doc = await msgRef.get();
+    const isOwner = doc.exists && user && doc.data().userId === user.uid;
+
+    if (!isAdmin && !isOwner) return;
 
     uiManager.showConfirm("Are you sure you want to delete this message?", async () => {
         try {
-            await firebase.firestore().collection('chats')
-                .doc(currentChannel)
-                .collection('messages')
-                .doc(messageId)
-                .delete();
-            console.log("Message deleted by admin");
+            await msgRef.delete();
+            console.log("Message deleted");
         } catch (error) {
             console.error("Error deleting message:", error);
         }
