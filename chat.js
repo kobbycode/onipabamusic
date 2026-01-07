@@ -193,6 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
         messageInput.addEventListener('input', handleTyping);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+
+        messageInput.addEventListener('input', handleMentionInput);
     }
     // Mic Button Logic
     const micBtn = document.getElementById('micBtn');
@@ -925,6 +933,10 @@ function parseMarkdown(text) {
 
     // Blockquote: > text (at start of line or string)
     html = html.replace(/^&gt;\s+(.*)$/gm, '<blockquote>$1</blockquote>');
+
+    // User Mentions
+    const mentionRegex = /@\[([^\]]+)\]/g;
+    html = html.replace(mentionRegex, '<span class="user-mention">@$1</span>');
 
     return html;
 }
@@ -1835,5 +1847,82 @@ function updatePinnedBanner(data) {
         banner.style.display = 'none';
         banner.dataset.pinnedId = '';
     }
+}
+
+// User Mentions Logic
+let mentionRange = null;
+
+async function handleMentionInput(e) {
+    const input = e.target;
+    const value = input.value;
+    const cursor = input.selectionStart;
+
+    // Find the last '@' before cursor
+    const lastAt = value.lastIndexOf('@', cursor - 1);
+
+    if (lastAt !== -1) {
+        const query = value.substring(lastAt + 1, cursor);
+        if (!query.includes(' ')) {
+            showMentionSuggestions(query, lastAt, cursor);
+            return;
+        }
+    }
+
+    hideMentions();
+}
+
+async function showMentionSuggestions(query, start, end) {
+    const list = document.getElementById('mentionsList');
+    try {
+        // Simple search for now, limit to 5
+        const snapshot = await firebase.firestore().collection('users')
+            .where('name', '>=', query)
+            .where('name', '<=', query + '\uf8ff')
+            .limit(5)
+            .get();
+
+        if (snapshot.empty) {
+            hideMentions();
+            return;
+        }
+
+        list.innerHTML = '';
+        snapshot.forEach(doc => {
+            const userData = doc.data();
+            const name = userData.name || 'User';
+            const item = document.createElement('div');
+            item.className = 'wa-mention-item';
+
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D4AF37&color=fff`;
+
+            item.innerHTML = `
+                <img src="${avatarUrl}" alt="avatar">
+                <span>${name}</span>
+            `;
+            item.onclick = () => selectMention(name, start, end);
+            list.appendChild(item);
+        });
+
+        list.style.display = 'block';
+        mentionRange = { start, end };
+    } catch (err) {
+        console.error('Mention error:', err);
+    }
+}
+
+function selectMention(name, start, end) {
+    const input = document.getElementById('messageInput');
+    const value = input.value;
+    // We use a special format @[Name] for detection in parseMarkdown
+    const newValue = value.substring(0, start) + '@[' + name + '] ' + value.substring(end);
+    input.value = newValue;
+    input.focus();
+    hideMentions();
+}
+
+function hideMentions() {
+    const list = document.getElementById('mentionsList');
+    if (list) list.style.display = 'none';
+    mentionRange = null;
 }
 

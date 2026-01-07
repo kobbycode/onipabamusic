@@ -4847,3 +4847,52 @@ video.msg-media-video {
     to { transform: translateY(0); opacity: 1; }
 }
 
+
+/* User Mentions */
+.wa-mentions-list {
+    background: #202c33;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px 8px 0 0;
+    position: absolute;
+    bottom: 60px;
+    left: 15px;
+    right: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.wa-mention-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.wa-mention-item:hover {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.wa-mention-item img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.wa-mention-item span {
+    color: #e9edef;
+    font-size: 0.9rem;
+}
+
+.user-mention {
+    color: var(--color-gold-primary);
+    background: rgba(212, 175, 55, 0.15);
+    padding: 0 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
