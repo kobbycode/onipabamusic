@@ -9,6 +9,7 @@ import {
 } from "./ui.js";
 import {
     fetchCollection,
+    fetchDocument,
     initAuthListener,
     publicContentData
 } from "./services.js";
@@ -79,19 +80,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pdfs = await fetchCollection('pdfs');
         renderPDFs(document.querySelector('.pdf-grid'), pdfs);
         observeNewItems();
-    } else if (page === 'video-player.html') {
+    } else if (page.includes('video-player')) {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        // In a real app we'd fetch specific doc, but for now we rely on the list or a direct fetch logic
-        // For simplicity, let's just fetch all and find
-        await fetchCollection('videos');
-        const video = publicContentData.videos.find(v => v.id === id);
-        initVideoPlayer(video);
-    } else if (page === 'audio-player.html') {
+        if (id) {
+            const video = await fetchDocument('videos', id);
+            if (video) {
+                initVideoPlayer(video);
+            } else {
+                console.error('Video not found:', id);
+            }
+        }
+    } else if (page.includes('audio-player')) {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        await fetchCollection('audios');
-        const audio = publicContentData.audios.find(a => a.id === id);
-        setupAudioPlayer(audio);
+        if (id) {
+            const audio = await fetchDocument('audios', id);
+            if (audio) {
+                setupAudioPlayer(audio);
+            } else {
+                console.error('Audio not found:', id);
+            }
+        }
     }
 });

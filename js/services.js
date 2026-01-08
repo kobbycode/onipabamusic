@@ -83,6 +83,23 @@ export const fetchCollection = async (collName, isLoadMore = false) => {
 };
 
 /**
+ * Fetch a single document by ID
+ */
+export const fetchDocument = async (collName, docId) => {
+    try {
+        const docRef = doc(db, collName, docId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { id: docSnap.id, ...docSnap.data() };
+        }
+        return null;
+    } catch (err) {
+        logError(`fetchDocument/${collName}/${docId}`, err);
+        return null;
+    }
+};
+
+/**
  * Initialize Auth state listener
  */
 export const initAuthListener = (callback) => {
