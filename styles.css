@@ -4118,11 +4118,22 @@ video.msg-media-video {
 
     @media (max-width: 480px) {
         .user-name-small {
-            display: none;
+            display: inline-block !important;
+            /* Force visibility */
+            font-size: 0.8rem;
+            max-width: 60px;
+            /* Constrain on very small screens */
         }
 
         .btn-login.logged-in {
-            padding: 0.25rem;
+            padding: 2px 8px 2px 2px !important;
+            gap: 6px !important;
+        }
+
+        .user-avatar-small {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.8rem !important;
         }
     }
 }
