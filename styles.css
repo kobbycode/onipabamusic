@@ -4992,6 +4992,10 @@ body {
 
     #mobileMoreMenu.show-menu {
         display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: all !important;
+        transform: translateY(0) scale(1) !important;
     }
 }
 
