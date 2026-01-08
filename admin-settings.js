@@ -144,8 +144,8 @@ window.switchSettingsTab = function (tabName) {
 // WEBSITE SETTINGS - FOOTER & SOCIAL MANAGEMENT
 // ==========================================
 
-// Load Settings (Footer & Social)
-function loadSettings() {
+// Load Settings (Footer, Social, Contact)
+window.loadFooterSettings = function () {
     // Footer Settings
     if (contentData.footerSettings) {
         document.getElementById('footerTitle').value = contentData.footerSettings.title || '';
@@ -173,6 +173,7 @@ function loadSettings() {
         document.getElementById('contactSocialLabelInput').value = contentData.contactSettings.socialLabel || '';
     }
 }
+window.loadSettings = window.loadFooterSettings; // Alias for backward compatibility if any
 
 // Save Footer Settings
 window.saveFooterSettings = async function (event) {
@@ -280,75 +281,9 @@ async function saveContentData() {
     }
 }
 
-// Initialize Website Settings on section load
-document.addEventListener('DOMContentLoaded', async function () {
-    // Nav Links
-    const settingsLink = document.querySelector('[data-section="settings"]');
-    if (settingsLink) {
-        settingsLink.addEventListener('click', async function () {
-            // Load settings from Firestore if not already loaded
-            if (!contentData.footerSettings || !contentData.socialSettings) {
-                try {
-                    const doc = await db.collection('settings').doc('general').get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        contentData.footerSettings = data.footerSettings || {};
-                        contentData.socialSettings = data.socialSettings || {};
-                        contentData.navLinks = data.navLinks || [];
-                        contentData.contactSettings = data.contactSettings || {};
-                    }
-                } catch (e) {
-                    console.error("Error loading initial settings:", e);
-                }
-
-                // Apply Defaults if empty (Migration Strategy)
-                if (!contentData.navLinks || contentData.navLinks.length === 0) {
-                    contentData.navLinks = [
-                        { text: 'Home', url: 'index.html', id: 1 },
-                        { text: 'About', url: 'about.html', id: 2 },
-                        { text: 'Videos', url: 'videos.html', id: 3 },
-                        { text: 'Audios', url: 'audios.html', id: 4 },
-                        { text: 'PDFs', url: 'pdfs.html', id: 5 },
-                        { text: 'News', url: 'news.html', id: 6 },
-                        { text: 'Contact', url: 'contact.html', id: 7 },
-                        { text: 'Chat', url: 'chat.html', id: 8 }
-                    ];
-                }
-                if (!contentData.footerSettings || !contentData.footerSettings.title) {
-                    contentData.footerSettings = {
-                        title: 'Onipaba Music',
-                        description: 'Touching souls and elevating spirits through the divine power of choral harmony. Join us in our musical journey.',
-                        newsletter: 'Stay Updated',
-                        copyright: '© 2025 Onipaba Music. All rights reserved.'
-                    };
-                }
-                if (!contentData.socialSettings) {
-                    contentData.socialSettings = {
-                        facebook: 'https://facebook.com',
-                        twitter: 'https://twitter.com',
-                        instagram: 'https://instagram.com',
-                        youtube: 'https://youtube.com'
-                    };
-                }
-                if (!contentData.contactSettings) {
-                    contentData.contactSettings = {
-                        heading: 'Bookings & Inquiries',
-                        email: 'inquiry@onipabamusic.com',
-                        phoneLabel: 'Phone',
-                        phoneValue: '+233 20 123 4567',
-                        locationLabel: 'Location',
-                        locationValue: 'Accra, Ghana',
-                        socialLabel: 'Follow Us'
-                    };
-                }
-            }
-            renderNavLinks();
-            loadSettings();
-        });
-    }
-
-    // Initial render if on settings section
-    if (window.location.hash === '#settings') {
+// Consolidated initialization function
+window.initializeAdminSettings = async function () {
+    try {
         const doc = await db.collection('settings').doc('general').get();
         if (doc.exists) {
             const data = doc.data();
@@ -357,7 +292,65 @@ document.addEventListener('DOMContentLoaded', async function () {
             contentData.navLinks = data.navLinks || [];
             contentData.contactSettings = data.contactSettings || {};
         }
+
+        // Apply Defaults if empty or missing
+        if (!contentData.navLinks || contentData.navLinks.length === 0) {
+            contentData.navLinks = [
+                { text: 'Home', url: 'index.html', id: 1 },
+                { text: 'About', url: 'about.html', id: 2 },
+                { text: 'Videos', url: 'videos.html', id: 3 },
+                { text: 'Audios', url: 'audios.html', id: 4 },
+                { text: 'PDFs', url: 'pdfs.html', id: 5 },
+                { text: 'News', url: 'news.html', id: 6 },
+                { text: 'Contact', url: 'contact.html', id: 7 },
+                { text: 'Chat', url: 'chat.html', id: 8 }
+            ];
+        }
+        if (!contentData.footerSettings || !contentData.footerSettings.title) {
+            contentData.footerSettings = {
+                title: 'Onipaba Music',
+                description: 'Touching souls and elevating spirits through the divine power of choral harmony. Join us in our musical journey.',
+                newsletter: 'Stay Updated',
+                copyright: '© 2025 Onipaba Music. All rights reserved.'
+            };
+        }
+        if (!contentData.socialSettings || !contentData.socialSettings.facebook) {
+            contentData.socialSettings = {
+                facebook: 'https://facebook.com/japheth.mireku',
+                twitter: 'https://twitter.com/onipabamusic',
+                instagram: 'https://instagram.com/onipabamusic',
+                youtube: 'https://youtube.com/@onipabamusic'
+            };
+        }
+        if (!contentData.contactSettings || !contentData.contactSettings.heading) {
+            contentData.contactSettings = {
+                heading: 'Bookings & Inquiries',
+                email: 'inquiry@onipabamusic.com',
+                phoneLabel: 'Phone',
+                phoneValue: '+233 20 123 4567',
+                locationLabel: 'Location',
+                locationValue: 'Accra, Ghana',
+                socialLabel: 'Follow Us'
+            };
+        }
+
         renderNavLinks();
-        loadSettings();
+        loadFooterSettings();
+    } catch (e) {
+        console.error("Error initializing admin settings:", e);
+    }
+};
+
+// Initialize Website Settings on section load
+document.addEventListener('DOMContentLoaded', async function () {
+    // Nav Links click handler
+    const settingsLink = document.querySelector('[data-section="settings"]');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', window.initializeAdminSettings);
+    }
+
+    // Initial render if on settings section
+    if (window.location.hash === '#settings' || (window.activeSection === 'settings')) {
+        window.initializeAdminSettings();
     }
 });
