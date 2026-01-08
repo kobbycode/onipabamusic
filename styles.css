@@ -4976,6 +4976,8 @@ body {
 
     /* Robust Menu Positioning */
     #mobileMoreMenu {
+        display: none !important;
+        /* Hidden by default */
         position: fixed !important;
         /* Fix to viewport to avoid clipping */
         bottom: 70px !important;
@@ -4986,6 +4988,10 @@ body {
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    #mobileMoreMenu.show-menu {
+        display: flex !important;
     }
 }
 

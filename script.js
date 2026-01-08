@@ -1840,6 +1840,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTeamMembers();
 });
 
+
 // ==========================================
 // MOBILE CHAT MENU TOGGLE
 // ==========================================
@@ -1852,16 +1853,13 @@ window.toggleMobileMenu = function () {
         return;
     }
 
-    // Check if currently visible
-    const isVisible = menu.style.display === 'flex';
-
     // Close other menus first if needed
     const emojiMenu = document.getElementById('emojiPickerMenu');
     if (emojiMenu) emojiMenu.style.display = 'none';
 
-    // Toggle
-    menu.style.display = isVisible ? 'none' : 'flex';
-    console.log('Menu display set to:', menu.style.display);
+    // Toggle class instead of inline style
+    menu.classList.toggle('show-menu');
+    console.log('Menu classes:', menu.className); // Debugging
 };
 
 // Close mobile menu when clicking outside
