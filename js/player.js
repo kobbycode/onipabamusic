@@ -90,7 +90,7 @@ export const initVideoPlayer = (videoData) => {
     } else {
         playerHtml = `
             <div class="video-container">
-                <video controls crossorigin playsinline poster="${poster}" style="width: 100%; height: 100%;">
+                <video controls autoplay crossorigin playsinline poster="${poster}" style="width: 100%; height: 100%;">
                     <source src="${url}">
                     Your browser does not support the video tag.
                 </video>
