@@ -189,4 +189,26 @@ export const renderSettings = (settings) => {
         if (social.instagram) instagramLinks.forEach(link => link.href = social.instagram);
         if (social.youtube) youtubeLinks.forEach(link => link.href = social.youtube);
     }
+
+    // 4. Render Contact Page Specific Info
+    if (settings.contactSettings) {
+        const contactHeading = document.getElementById('contact-heading');
+        const contactEmail = document.getElementById('contact-email');
+        const contactPhoneLabel = document.getElementById('contact-phone-label');
+        const contactPhoneValue = document.getElementById('contact-phone-value');
+        const contactLocationLabel = document.getElementById('contact-location-label');
+        const contactLocationValue = document.getElementById('contact-location-value');
+        const contactSocialLabel = document.getElementById('contact-social-label');
+
+        if (contactHeading && settings.contactSettings.heading) contactHeading.textContent = settings.contactSettings.heading;
+        if (contactEmail && settings.contactSettings.email) {
+            contactEmail.textContent = settings.contactSettings.email;
+            contactEmail.href = `mailto:${settings.contactSettings.email}`;
+        }
+        if (contactPhoneLabel && settings.contactSettings.phoneLabel) contactPhoneLabel.textContent = settings.contactSettings.phoneLabel;
+        if (contactPhoneValue && settings.contactSettings.phoneValue) contactPhoneValue.textContent = settings.contactSettings.phoneValue;
+        if (contactLocationLabel && settings.contactSettings.locationLabel) contactLocationLabel.textContent = settings.contactSettings.locationLabel;
+        if (contactLocationValue && settings.contactSettings.locationValue) contactLocationValue.textContent = settings.contactSettings.locationValue;
+        if (contactSocialLabel && settings.contactSettings.socialLabel) contactSocialLabel.textContent = settings.contactSettings.socialLabel;
+    }
 };

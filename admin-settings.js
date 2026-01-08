@@ -161,6 +161,17 @@ function loadSettings() {
         document.getElementById('socialInstagram').value = contentData.socialSettings.instagram || '';
         document.getElementById('socialYoutube').value = contentData.socialSettings.youtube || '';
     }
+
+    // Contact Settings
+    if (contentData.contactSettings) {
+        document.getElementById('contactHeadingInput').value = contentData.contactSettings.heading || '';
+        document.getElementById('contactEmailInput').value = contentData.contactSettings.email || '';
+        document.getElementById('contactPhoneLabelInput').value = contentData.contactSettings.phoneLabel || '';
+        document.getElementById('contactPhoneValueInput').value = contentData.contactSettings.phoneValue || '';
+        document.getElementById('contactLocationLabelInput').value = contentData.contactSettings.locationLabel || '';
+        document.getElementById('contactLocationValueInput').value = contentData.contactSettings.locationValue || '';
+        document.getElementById('contactSocialLabelInput').value = contentData.contactSettings.socialLabel || '';
+    }
 }
 
 // Save Footer Settings
@@ -217,6 +228,36 @@ window.saveSocialSettings = async function (event) {
     }
 };
 
+// Save Contact Settings
+window.saveContactSettings = async function (event) {
+    event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    contentData.contactSettings = {
+        heading: document.getElementById('contactHeadingInput').value,
+        email: document.getElementById('contactEmailInput').value,
+        phoneLabel: document.getElementById('contactPhoneLabelInput').value,
+        phoneValue: document.getElementById('contactPhoneValueInput').value,
+        locationLabel: document.getElementById('contactLocationLabelInput').value,
+        locationValue: document.getElementById('contactLocationValueInput').value,
+        socialLabel: document.getElementById('contactSocialLabelInput').value
+    };
+
+    try {
+        await saveContentData();
+        uiManager.showAlert('Contact information saved successfully!', 'success');
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+};
+
 // Helper to save content data to Firestore
 async function saveContentData() {
     try {
@@ -228,6 +269,7 @@ async function saveContentData() {
         if (contentData.footerSettings) data.footerSettings = contentData.footerSettings;
         if (contentData.socialSettings) data.socialSettings = contentData.socialSettings;
         if (contentData.navLinks) data.navLinks = contentData.navLinks;
+        if (contentData.contactSettings) data.contactSettings = contentData.contactSettings;
 
         batch.set(settingsRef, data, { merge: true });
         await batch.commit();
@@ -253,6 +295,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         contentData.footerSettings = data.footerSettings || {};
                         contentData.socialSettings = data.socialSettings || {};
                         contentData.navLinks = data.navLinks || [];
+                        contentData.contactSettings = data.contactSettings || {};
                     }
                 } catch (e) {
                     console.error("Error loading initial settings:", e);
@@ -287,6 +330,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                         youtube: 'https://youtube.com'
                     };
                 }
+                if (!contentData.contactSettings) {
+                    contentData.contactSettings = {
+                        heading: 'Bookings & Inquiries',
+                        email: 'inquiry@onipabamusic.com',
+                        phoneLabel: 'Phone',
+                        phoneValue: '+233 20 123 4567',
+                        locationLabel: 'Location',
+                        locationValue: 'Accra, Ghana',
+                        socialLabel: 'Follow Us'
+                    };
+                }
             }
             renderNavLinks();
             loadSettings();
@@ -301,6 +355,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             contentData.footerSettings = data.footerSettings || {};
             contentData.socialSettings = data.socialSettings || {};
             contentData.navLinks = data.navLinks || [];
+            contentData.contactSettings = data.contactSettings || {};
         }
         renderNavLinks();
         loadSettings();
