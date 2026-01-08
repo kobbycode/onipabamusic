@@ -6,26 +6,29 @@
 /* Video Cards */
 .video-card {
     border: 1px solid rgba(212, 175, 55, 0.15) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
 }
 
 .video-card:hover {
-    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, 0.3) !important;
-    border-color: rgba(212, 175, 55, 0.4) !important;
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.15) !important;
+    border-color: rgba(212, 175, 55, 0.5) !important;
 }
 
 /* Audio Cards */
 .audio-card {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(212, 175, 55, 0.2) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
 }
 
 .audio-card:hover {
     background: rgba(255, 255, 255, 0.08) !important;
-    border-color: rgba(212, 175, 55, 0.4) !important;
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.3) !important;
+    transform: translateY(-10px) scale(1.03) !important;
+    border-color: rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.15) !important;
 }
 
 /* News Cards */

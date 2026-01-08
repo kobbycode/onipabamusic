@@ -26,11 +26,7 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="js/main.js"></script>
 </head>
 
 <body>
@@ -92,9 +88,39 @@
     <section class="section">
         <div class="container">
             <div class="news-grid">
-                <!-- News will be loaded dynamically via script.js -->
-                <div class="loading-spinner"
-                    style="text-align: center; width: 100%; grid-column: 1 / -1; padding: 2rem;">Loading news...</div>
+                <!-- Skeleton loaders shown until content is injected -->
+                <div class="skeleton-news-card">
+                    <div class="skeleton-news-image"></div>
+                    <div class="skeleton-news-content">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text"></div>
+                    </div>
+                </div>
+                <div class="skeleton-news-card">
+                    <div class="skeleton-news-image"></div>
+                    <div class="skeleton-news-content">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text"></div>
+                    </div>
+                </div>
+                <div class="skeleton-news-card">
+                    <div class="skeleton-news-image"></div>
+                    <div class="skeleton-news-content">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text"></div>
+                    </div>
+                </div>
+                <div class="skeleton-news-card">
+                    <div class="skeleton-news-image"></div>
+                    <div class="skeleton-news-content">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -123,7 +149,6 @@
         </div>
     </footer>
 
-    <script type="module" src="script.js"></script>
 </body>
 
 </html>

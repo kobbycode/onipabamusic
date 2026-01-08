@@ -96,7 +96,57 @@ h4,
     transition: transform 0.1s ease;
 }
 
-/* Ripple Effect Styles */
+/* Glassmorphism utility */
+.glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+/* Premium Empty States */
+.empty-state-premium {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(212, 175, 55, 0.2);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.empty-state-premium .material-icons {
+    font-size: 3rem;
+    color: var(--color-gold-primary);
+    opacity: 0.5;
+}
+
+.empty-state-premium p {
+    color: var(--color-text-secondary);
+    font-family: 'Inter', sans-serif;
+    max-width: 300px;
+    line-height: 1.6;
+}
+
+/* Custom Selection Color */
+::selection {
+    background: rgba(212, 175, 55, 0.3);
+    color: #fff;
+}
+
+/* Global Transitions & Focus States */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-gold-primary) !important;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1) !important;
+}
+
 .ripple-container {
     position: relative;
     overflow: hidden !important;
@@ -246,9 +296,11 @@ a {
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(26, 20, 16, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    background: rgba(15, 13, 11, 0.85);
+    /* Slightly darker for better contrast */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
     z-index: 2000 !important;
     transition: var(--transition-normal);
 }
@@ -573,8 +625,8 @@ a {
 
 .btn-primary:hover {
     background: var(--color-gold-light);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(212, 175, 55, 0.4);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(212, 175, 55, 0.4);
 }
 
 .btn-secondary {
