@@ -64,7 +64,40 @@ function highlightActiveNav() {
 }
 
 // Run on load
-document.addEventListener('DOMContentLoaded', highlightActiveNav);
+document.addEventListener('DOMContentLoaded', () => {
+    highlightActiveNav();
+    initRippleEffect();
+});
+
+// ==========================================
+// RIPPLE EFFECT LOGIC
+// ==========================================
+function initRippleEffect() {
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('.btn-gold, .btn-primary, .newsletter-btn, .nav-link, .btn-login');
+        if (!target) return;
+
+        target.classList.add('ripple-container');
+
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+
+        const rect = target.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+
+        target.appendChild(ripple);
+
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+}
 
 // ==========================================
 // HEADER SCROLL EFFECT
@@ -103,18 +136,31 @@ const observerOptions = {
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            entry.target.classList.add('active');
+            // Unobserve once animated? Or keep for repeat?
+            // observer.unobserve(entry.target); 
         }
     });
 }, observerOptions);
 
-// Observe all cards
-document.querySelectorAll('.video-card, .audio-card, .pdf-card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(30px)';
-    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(card);
+// Observe reveal elements
+function initRevealScroll() {
+    document.querySelectorAll('.reveal, .reveal-scale, .video-card, .audio-card, .pdf-card, .news-card').forEach(el => {
+        if (!el.classList.contains('reveal') && !el.classList.contains('reveal-scale')) {
+            el.classList.add('reveal-scale');
+        }
+        observer.observe(el);
+    });
+}
+
+// Global exposure for dynamic content
+window.observeReveal = (el) => {
+    if (el) observer.observe(el);
+};
+
+// Run after all content is potentially rendered or on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initRevealScroll();
 });
 
 // ==========================================
@@ -450,40 +496,31 @@ window.addEventListener('load', () => {
 // ==========================================
 // DYNAMIC CONTENT MANAGEMENT
 // ==========================================
-let publicContentData = {
+window.publicContentData = {
     videos: [],
     audios: [],
     pdfs: [],
     news: []
 };
 
-// Load content from Firestore (Public)
-async function loadPublicContent() {
-    if (typeof db === 'undefined' || !db) {
-        logError('loadPublicContent', 'Firestore not initialized', {
-            dbType: typeof db,
-            dbValue: db
-        });
+window.paginationState = {
+    videos: { lastDoc: null, hasMore: true, limit: 6 },
+    news: { lastDoc: null, hasMore: true, limit: 6 },
+    audios: { lastDoc: null, hasMore: true, limit: 8 },
+    pdfs: { lastDoc: null, hasMore: true, limit: 12 }
+};
 
-        // Show error in all content sections
+// Load content from Firestore (Public)
+async function loadPublicContent(isLoadMore = false, specificColl = null) {
+    if (typeof db === 'undefined' || !db) {
+        logError('loadPublicContent', 'Firestore not initialized');
         ['.video-grid', '.news-grid', '.audio-grid', '.pdf-grid'].forEach(selector => {
-            showError(selector, 'Database connection failed. Please refresh the page.', {
-                retryFn: 'location.reload',
-                type: 'error'
-            });
+            showError(selector, 'Database connection failed. Please refresh the page.');
         });
         return;
     }
-    console.log('🚀 Loading public content from Firestore...');
 
-    window.publicContentData = {
-        videos: [],
-        news: [],
-        audios: [],
-        pdfs: []
-    };
-
-    const collections = ['videos', 'news', 'audios', 'pdfs'];
+    const collections = specificColl ? [specificColl] : ['videos', 'news', 'audios', 'pdfs'];
     const orderFields = {
         videos: 'createdAt',
         news: 'date',
@@ -491,28 +528,41 @@ async function loadPublicContent() {
         pdfs: 'createdAt'
     };
 
-
-    // Use individual fetchers to isolate errors
     const fetchCollection = async (collName) => {
         try {
-            console.log(`Fetching ${collName}...`);
-            const snap = await db.collection(collName).orderBy(orderFields[collName], 'desc').get();
-            console.log(`✅ ${collName} fetched: ${snap.size} items`);
-            publicContentData[collName] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } catch (err) {
-            // Enhanced error logging with context
-            logError(`loadPublicContent/${collName}`, err, {
-                collection: collName,
-                orderField: orderFields[collName],
-                dbInitialized: typeof db !== 'undefined'
-            });
+            const state = paginationState[collName];
+            if (!state.hasMore && isLoadMore) return;
 
-            // User-friendly error display with retry option
-            const gridSelector = `.${collName.slice(0, -1)}-grid`;
-            showError(gridSelector, `Unable to load ${collName}. Please check your connection and try again.`, {
-                retryFn: 'loadPublicContent',
-                type: 'error'
-            });
+            let query = db.collection(collName).orderBy(orderFields[collName], 'desc');
+
+            if (isLoadMore && state.lastDoc) {
+                query = query.startAfter(state.lastDoc);
+            }
+
+            query = query.limit(state.limit);
+
+            const snap = await query.get();
+
+            if (snap.empty) {
+                state.hasMore = false;
+                updateLoadMoreButton(collName);
+                return;
+            }
+
+            const newData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            if (isLoadMore) {
+                publicContentData[collName] = [...publicContentData[collName], ...newData];
+            } else {
+                publicContentData[collName] = newData;
+            }
+
+            state.lastDoc = snap.docs[snap.docs.length - 1];
+            state.hasMore = snap.size === state.limit;
+
+            updateLoadMoreButton(collName);
+        } catch (err) {
+            logError(`loadPublicContent/${collName}`, err);
         }
     };
 
@@ -525,25 +575,65 @@ async function loadPublicContent() {
             audios: publicContentData.audios,
             news: publicContentData.news
         });
-    } else if (searchManager) {
-        searchManager.setSearchData({
-            videos: publicContentData.videos,
-            audios: publicContentData.audios,
-            news: publicContentData.news
-        });
     }
 
     // Render results
-    renderPublicVideos();
-    renderPublicNews();
-    renderPublicAudios();
-    renderPublicPDFs();
+    renderPublicVideos(isLoadMore && specificColl === 'videos');
+    renderPublicNews(isLoadMore && specificColl === 'news');
+    renderPublicAudios(isLoadMore && specificColl === 'audios');
+    renderPublicPDFs(isLoadMore && specificColl === 'pdfs');
     updateSearchIndex();
 
-    // Init page-specific components
-    if (document.getElementById('news-detail-content')) initNewsDetail();
-    if (document.getElementById('video-player-content')) initVideoPlayer();
-    if (document.getElementById('audio-player-content')) initAudioPlayer();
+    if (!isLoadMore) {
+        if (document.getElementById('news-detail-content')) initNewsDetail();
+        if (document.getElementById('video-player-content')) initVideoPlayer();
+        if (document.getElementById('audio-player-content')) initAudioPlayer();
+    }
+}
+
+function updateLoadMoreButton(collName) {
+    const gridSelector = `.${collName.slice(0, -1)}-grid`;
+    const container = document.querySelector(gridSelector);
+    if (!container) return;
+
+    // Check if we already have a button
+    let btn = container.parentElement.querySelector('.load-more-container');
+
+    // Don't show buttons on homepage 
+    const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+    if (isHomePage) {
+        if (btn) btn.remove();
+        return;
+    }
+
+    if (!paginationState[collName].hasMore) {
+        if (btn) btn.remove();
+        return;
+    }
+
+    if (!btn) {
+        const btnWrapper = document.createElement('div');
+        btnWrapper.className = 'load-more-container';
+        btnWrapper.style.cssText = 'text-align: center; margin-top: 3rem; margin-bottom: 2rem;';
+        btnWrapper.innerHTML = `
+            <button class="btn-gold load-more-btn" data-collection="${collName}" style="padding: 0.8rem 2rem; font-size: 0.9rem;">
+                Load More ${collName.charAt(0).toUpperCase() + collName.slice(1)}
+            </button>
+        `;
+        container.after(btnWrapper);
+
+        btnWrapper.querySelector('button').addEventListener('click', () => {
+            const btn = btnWrapper.querySelector('button');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'Loading...';
+
+            loadPublicContent(true, collName).finally(() => {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            });
+        });
+    }
 }
 
 // ==========================================
@@ -607,20 +697,16 @@ function updateUIMessage(selector, message) {
 }
 
 // Render Public Videos
-function renderPublicVideos() {
+function renderPublicVideos(isLoadMore = false) {
     const container = document.querySelector('.video-grid');
     if (!container) return;
 
-    // Don't render videos on dedicated player pages
     const currentPath = window.location.pathname;
-    // Exact match or includes check for audio player
     if (currentPath.includes('audio-player') || currentPath.includes('news-detail')) {
         return;
     }
 
-    // Show skeleton loaders while data is loading
     if (!publicContentData.videos || publicContentData.videos.length === 0) {
-        // Check if we're still loading (no data yet) vs truly empty
         if (!window.publicContentData || window.publicContentData.videos === undefined) {
             container.innerHTML = Array(3).fill(0).map(() => `
                 <div class="skeleton-card">
@@ -628,27 +714,32 @@ function renderPublicVideos() {
                     <div class="skeleton-info">
                         <div class="skeleton-title"></div>
                         <div class="skeleton-text"></div>
-                        <div class="skeleton-text skeleton-text-short"></div>
                     </div>
                 </div>
             `).join('');
             return;
         }
-
-        // Data loaded but empty
-        container.innerHTML = '<div class="empty-state"><p class="empty-message">No videos available at the moment.</p></div>';
+        container.innerHTML = '<div class="empty-state"><p class="empty-message">No videos available.</p></div>';
         return;
     }
 
-    // Limit to 3 on homepage
     const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
-    const displayVideos = isHomePage ? publicContentData.videos.slice(0, 3) : publicContentData.videos;
 
-    container.innerHTML = displayVideos.map((video, index) => `
-        <article class="video-card fade-in" data-index="${index}">
-            <div class="video-thumbnail-wrapper" style="position: relative; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <img src="${video.thumbnail || 'images/logo-placeholder.png'}" alt="${video.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" onerror="this.src='images/logo-placeholder.png'">
-                <!-- Play Overlay -->
+    // Determine which videos to render
+    let displayVideos = isHomePage ? publicContentData.videos.slice(0, 3) : publicContentData.videos;
+
+    // If it's load more, we only want the newly added ones for appending
+    if (isLoadMore) {
+        const limit = paginationState.videos.limit;
+        displayVideos = displayVideos.slice(-limit);
+    }
+
+    const html = displayVideos.map((video, index) => {
+        const globalIndex = isLoadMore ? publicContentData.videos.length - displayVideos.length + index : index;
+        return `
+        <article class="video-card reveal-scale" data-index="${globalIndex}">
+            <div class="video-thumbnail-wrapper" style="position: relative; aspect-ratio: 16/9; overflow: hidden;">
+                <img src="${video.thumbnail || 'images/logo-placeholder.png'}" alt="${video.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" onerror="this.src='images/logo-placeholder.png'">
                  <div class="video-play-overlay">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2">
                         <circle cx="24" cy="24" r="22" fill="rgba(0,0,0,0.5)" />
@@ -657,35 +748,28 @@ function renderPublicVideos() {
                  </div>
             </div>
             <div class="video-info" style="padding: 1.25rem;">
-                <!-- Title Section -->
                 <div style="margin-bottom: 1rem;">
-                    <span style="display: block; color: var(--color-text-secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; opacity: 0.8;">Title</span>
-                    <h4 class="video-title" style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin: 0; color: #fff; line-height: 1.2;">${video.title}</h4>
-                </div>
-
-                <!-- Divider -->
-                <div style="width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 1rem;"></div>
-
-                <!-- Metadata Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <!-- Category -->
-                    <div>
-                        <span style="display: block; color: var(--color-text-secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; opacity: 0.8;">Category</span>
-                        <div style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #e0e0e0;">${video.meta || 'Performance'}</div>
-                    </div>
-
-                    <!-- Composer (if exists) -->
-                    ${video.composedBy ? `
-                    <div>
-                        <span style="display: block; color: var(--color-text-secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; opacity: 0.8;">Composer</span>
-                        <div style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--color-gold-primary); font-weight: 500;">${video.composedBy}</div>
-                    </div>` : ''}
+                    <span style="display: block; color: var(--color-text-secondary); font-size: 0.7rem; text-transform: uppercase;">Title</span>
+                    <h4 class="video-title" style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin: 0; color: #fff;">${video.title}</h4>
                 </div>
             </div>
         </article>
-    `).join('');
+    `;
+    }).join('');
 
-    // Re-attach event listeners for the new cards
+    if (isLoadMore) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        Array.from(tempDiv.children).forEach(child => {
+            container.appendChild(child);
+            if (window.observeReveal) window.observeReveal(child);
+        });
+    } else {
+        container.innerHTML = html;
+        // Re-observe all if it's a fresh render
+        if (typeof initRevealScroll === 'function') initRevealScroll();
+    }
+
     attachVideoCardListeners();
 }
 
@@ -705,27 +789,23 @@ function attachVideoCardListeners() {
 
 
 // Render Public News
-function renderPublicNews() {
+function renderPublicNews(isLoadMore = false) {
     const container = document.querySelector('.news-grid');
     if (!container) return;
 
-    // Don't render news on dedicated player pages
     const currentPath = window.location.pathname;
     if (currentPath.includes('video-player.html') || currentPath.includes('audio-player.html')) {
         return;
     }
 
-    // Show skeleton loaders while data is loading
     if (!publicContentData.news || publicContentData.news.length === 0) {
         if (!window.publicContentData || window.publicContentData.news === undefined) {
             container.innerHTML = Array(3).fill(0).map(() => `
                 <div class="skeleton-news-card">
                     <div class="skeleton-news-image"></div>
                     <div class="skeleton-news-content">
-                        <div class="skeleton-text skeleton-text-short"></div>
                         <div class="skeleton-title"></div>
                         <div class="skeleton-text"></div>
-                        <div class="skeleton-text" style="width: 90%;"></div>
                     </div>
                 </div>
             `).join('');
@@ -735,31 +815,41 @@ function renderPublicNews() {
         return;
     }
 
-    // Limit to 3 on homepage
     const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
-    const displayNews = isHomePage ? publicContentData.news.slice(0, 3) : publicContentData.news;
+    let displayNews = isHomePage ? publicContentData.news.slice(0, 3) : publicContentData.news;
 
-    container.innerHTML = displayNews.map(item => `
-        <article class="news-card fade-in">
-            <img src="${item.image || 'images/logo-placeholder.png'}" alt="${item.title}" class="news-card-image" onerror="this.src='images/logo-placeholder.png'">
+    if (isLoadMore) {
+        const limit = paginationState.news.limit;
+        displayNews = displayNews.slice(-limit);
+    }
+
+    const html = displayNews.map(item => `
+        <article class="news-card reveal-scale">
+            <img src="${item.image || 'images/logo-placeholder.png'}" alt="${item.title}" class="news-card-image" loading="lazy" onerror="this.src='images/logo-placeholder.png'">
             <div class="news-content">
                 <div class="news-date">${item.date}</div>
                 <h3 class="news-title">${item.title}</h3>
                 <p class="news-excerpt">${item.excerpt}</p>
-                <a href="news-detail.html?id=${item.id}" class="news-link">
-                    Read full article
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </a>
+                <a href="news-detail.html?id=${item.id}" class="news-link">Read full article</a>
             </div>
         </article>
     `).join('');
+
+    if (isLoadMore) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        Array.from(tempDiv.children).forEach(child => {
+            container.appendChild(child);
+            if (window.observeReveal) window.observeReveal(child);
+        });
+    } else {
+        container.innerHTML = html;
+        if (typeof initRevealScroll === 'function') initRevealScroll();
+    }
 }
 
 // Render Public Audios
-function renderPublicAudios() {
+function renderPublicAudios(isLoadMore = false) {
     const container = document.querySelector('.audio-grid');
     if (!container) return;
 
@@ -776,7 +866,6 @@ function renderPublicAudios() {
                 <div class="skeleton-audio-card">
                     <div class="skeleton-audio-cover"></div>
                     <div class="skeleton-title" style="width: 90%; margin: 0 auto;"></div>
-                    <div class="skeleton-text skeleton-text-short" style="margin: 0.5rem auto 0;"></div>
                 </div>
             `).join('');
             return;
@@ -787,67 +876,77 @@ function renderPublicAudios() {
 
     // Limit to 4 on homepage
     const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
-    const displayAudios = isHomePage ? publicContentData.audios.slice(0, 4) : publicContentData.audios;
+    let displayAudios = isHomePage ? publicContentData.audios.slice(0, 4) : publicContentData.audios;
 
-    container.innerHTML = displayAudios.map((audio, index) => `
-        <article class="audio-card fade-in" data-index="${index}">
+    if (isLoadMore) {
+        const limit = paginationState.audios.limit;
+        displayAudios = displayAudios.slice(-limit);
+    }
+
+    const html = displayAudios.map((audio, index) => {
+        const globalIndex = isLoadMore ? publicContentData.audios.length - displayAudios.length + index : index;
+        return `
+        <article class="audio-card reveal-scale" data-index="${globalIndex}">
             <div class="audio-cover" style="background-image: url('${audio.cover || 'images/logo-placeholder.png'}');" onerror="this.style.backgroundImage='url(images/logo-placeholder.png)'">
                 <button class="audio-play-btn" 
                         data-audio-title="${audio.title}" 
                         data-audio-artist="${audio.artist || audio.composedBy || 'John Onipaba'}" 
                         data-audio-src="${audio.url}" 
                         data-audio-cover="${audio.cover || 'images/logo-placeholder.png'}"
-                        data-index="${index}"
+                        data-index="${globalIndex}"
                         aria-label="Play ${audio.title}">
                 </button>
             </div>
             <div class="audio-info">
                 <h4 class="audio-title">${audio.title}</h4>
-                <div class="audio-artist">${audio.artist || audio.composedBy || 'John Onipaba'}</div>
-                <div class="audio-duration">${audio.duration || '--:--'}</div>
+                <p class="audio-artist">${audio.artist || audio.composedBy || 'John Onipaba'}</p>
             </div>
         </article>
-    `).join('');
+    `;
+    }).join('');
+
+    if (isLoadMore) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        Array.from(tempDiv.children).forEach(child => {
+            container.appendChild(child);
+            if (window.observeReveal) window.observeReveal(child);
+        });
+    } else {
+        container.innerHTML = html;
+        if (typeof initRevealScroll === 'function') initRevealScroll();
+    }
 }
 
 // Render Public PDFs
-function renderPublicPDFs() {
+function renderPublicPDFs(isLoadMore = false) {
     const container = document.querySelector('.pdf-grid');
     if (!container) return;
 
-    // Don't render PDFs on dedicated player pages
-    const currentPath = window.location.pathname;
-    if (currentPath.includes('video-player.html') || currentPath.includes('audio-player.html') || currentPath.includes('news-detail.html')) {
-        return;
-    }
-
-    // Show skeleton loaders while data is loading
     if (!publicContentData.pdfs || publicContentData.pdfs.length === 0) {
         if (!window.publicContentData || window.publicContentData.pdfs === undefined) {
-            container.innerHTML = Array(3).fill(0).map(() => `
-                <div class="skeleton-card">
-                    <div class="skeleton-thumbnail" style="height: 150px;"></div>
-                    <div class="skeleton-info">
-                        <div class="skeleton-title"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text skeleton-text-short"></div>
-                    </div>
+            container.innerHTML = Array(4).fill(0).map(() => `
+                <div class="skeleton-pdf-card">
+                    <div class="skeleton-pdf-icon"></div>
+                    <div class="skeleton-title"></div>
                 </div>
             `).join('');
             return;
         }
-        container.innerHTML = '<div class="empty-state"><p class="empty-message">No sheet music available.</p></div>';
+        container.innerHTML = '<div class="empty-state"><p class="empty-message">No PDF scores available.</p></div>';
         return;
     }
 
-    // Limit to 4 on homepage
-    const isHomePage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '';
-    const displayPdfs = isHomePage ? publicContentData.pdfs.slice(0, 4) : publicContentData.pdfs;
+    let displayPDFs = publicContentData.pdfs;
+    if (isLoadMore) {
+        const limit = paginationState.pdfs.limit;
+        displayPDFs = displayPDFs.slice(-limit);
+    }
 
-    container.innerHTML = displayPdfs.map(pdf => `
-        <div class="pdf-card">
+    const html = displayPDFs.map(pdf => `
+        <article class="pdf-card reveal-scale">
             <div class="pdf-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold-primary)" stroke-width="1.5">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -856,16 +955,31 @@ function renderPublicPDFs() {
                 </svg>
             </div>
             <div class="pdf-info">
-                <h3 class="pdf-title">${pdf.title}</h3>
-                ${pdf.composedBy ? `<p class="pdf-composer">By ${pdf.composedBy}</p>` : ''}
-                <p class="pdf-meta">${pdf.description || ''}</p>
-                <div class="pdf-actions">
-                    <span class="pdf-size">${pdf.size || ''}</span>
-                    <button class="btn-download" onclick="forceDownload('${pdf.url}', '${pdf.title}.pdf')" ${!pdf.url ? 'disabled' : ''}>Download</button>
-                </div>
+                <h4 class="pdf-title">${pdf.title}</h4>
+                <p class="pdf-meta">${pdf.category || 'Sheet Music'}</p>
+                <a href="${pdf.url}" target="_blank" class="pdf-download-btn">
+                    Download PDF
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </a>
             </div>
-        </div>
+        </article>
     `).join('');
+
+    if (isLoadMore) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        Array.from(tempDiv.children).forEach(child => {
+            container.appendChild(child);
+            if (window.observeReveal) window.observeReveal(child);
+        });
+    } else {
+        container.innerHTML = html;
+        if (typeof initRevealScroll === 'function') initRevealScroll();
+    }
 }
 
 // Helper to force download for cross-origin URLs
@@ -947,7 +1061,7 @@ function initVideoPlayer() {
         if (videoId) {
             playerHtml = `
                 <div class="youtube-preview" id="ytPreview" onclick="loadYoutubeIframe('${videoId}')">
-                    <img src="${poster}" alt="${video.title}" class="preview-poster">
+                    <img src="${poster}" alt="${video.title}" class="preview-poster" loading="lazy">
                     <div class="video-play-overlay" style="opacity: 1;">
                         <svg width="64" height="64" viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2">
                             <circle cx="24" cy="24" r="22" fill="rgba(0,0,0,0.6)" />
@@ -1059,7 +1173,7 @@ window.initNewsDetail = function () {
             </div>
             
             <div class="news-detail-image-container">
-                <img src="${article.image || 'images/logo-placeholder.png'}" alt="${article.title}" class="news-detail-image" onerror="this.src='images/logo-placeholder.png'">
+                <img src="${article.image || 'images/logo-placeholder.png'}" alt="${article.title}" class="news-detail-image" loading="lazy" onerror="this.src='images/logo-placeholder.png'">
             </div>
 
             <div class="news-detail-content">
@@ -1115,7 +1229,7 @@ window.initAudioPlayer = function () {
             <div class="audio-player-layout">
                 <div class="audio-visual-section">
                     <div class="audio-main-cover">
-                        <img src="${cover}" alt="${audio.title}" class="player-cover-img" onerror="this.src='images/logo-placeholder.png'">
+                        <img src="${cover}" alt="${audio.title}" class="player-cover-img" loading="lazy" onerror="this.src='images/logo-placeholder.png'">
                         <div class="playback-ring"></div>
                     </div>
                 </div>
@@ -1407,7 +1521,7 @@ if (searchInput) {
                 resultItem.href = item.link;
                 resultItem.className = 'search-result-item';
                 resultItem.innerHTML = `
-                <img src="${item.image}" alt="${item.title}" class="result-image" onerror="this.src='images/logo-placeholder.png'">
+                <img src="${item.image}" alt="${item.title}" class="result-image" loading="lazy" onerror="this.src='images/logo-placeholder.png'">
                 <div class="result-info">
                     <span class="result-type">${item.type}</span>
                     <span class="result-title">${item.title}</span>

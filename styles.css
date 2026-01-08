@@ -61,6 +61,95 @@ h4,
     line-height: var(--line-height-heading) !important;
 }
 
+/* Interaction Polish */
+.btn-login:hover,
+.search-trigger:hover,
+.nav-link:hover {
+    transform: scale(1.05);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.btn-login:active,
+.search-trigger:active,
+.nav-link:active,
+.btn-gold:active,
+.btn-primary:active,
+.newsletter-btn:active {
+    transform: scale(0.98);
+}
+
+.video-card:hover,
+.audio-card:hover,
+.news-card:hover,
+.pdf-card:hover,
+.profile-card:hover {
+    box-shadow: var(--shadow-gold);
+    border-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+.video-card:active,
+.audio-card:active,
+.news-card:active,
+.pdf-card:active,
+.profile-card:active {
+    transform: scale(0.98) translateY(0);
+    transition: transform 0.1s ease;
+}
+
+/* Ripple Effect Styles */
+.ripple-container {
+    position: relative;
+    overflow: hidden !important;
+}
+
+.ripple {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Premium Play Button Pulse */
+.video-thumbnail-wrapper:hover .video-play-overlay {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.video-play-overlay svg {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.video-thumbnail-wrapper:hover .video-play-overlay svg {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8));
+    animation: play-pulse 2s infinite;
+}
+
+@keyframes play-pulse {
+    0% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8));
+    }
+
+    50% {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0-25px rgba(212, 175, 55, 1));
+    }
+
+    100% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8));
+    }
+}
+
 /* ==========================================
    RESET & BASE STYLES
    ========================================== */
@@ -110,9 +199,43 @@ a {
 }
 
 /* Responsive Typography Base */
-body {
-    font-size: clamp(0.9rem, 1.5vw, 1rem);
-    line-height: 1.6;
+/* ==========================================
+   REVEAL ON SCROLL ANIMATIONS
+   ========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+    will-change: transform, opacity;
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-delay-1 {
+    transition-delay: 0.1s;
+}
+
+.reveal-delay-2 {
+    transition-delay: 0.2s;
+}
+
+.reveal-delay-3 {
+    transition-delay: 0.3s;
+}
+
+/* Scale Reveal for Cards */
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.reveal-scale.active {
+    opacity: 1;
+    transform: scale(1);
 }
 
 /* ==========================================
@@ -527,10 +650,13 @@ body {
 }
 
 .video-card {
-    background: var(--color-bg-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.1);
     border-radius: 12px;
     overflow: hidden;
-    transition: var(--transition-normal);
+    transition: all var(--transition-normal);
     cursor: pointer;
 }
 
@@ -651,16 +777,16 @@ body {
     flex-direction: column;
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 175, 55, 0.1);
     border-radius: 8px;
     padding: 12px;
-    transition: var(--transition-normal);
+    transition: all var(--transition-normal);
     cursor: pointer;
     text-align: center;
     width: 100%;
     max-width: 220px;
-    /* Prevent cards from stretching too wide */
     box-sizing: border-box;
 }
 
@@ -944,14 +1070,15 @@ body {
 .pdf-card {
     display: flex;
     flex-direction: column;
-    /* Stack vertically */
     align-items: flex-start;
     gap: var(--spacing-md);
-    background: var(--color-bg-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 175, 55, 0.1);
     border-radius: 12px;
     padding: var(--spacing-lg);
-    transition: var(--transition-normal);
+    transition: all var(--transition-normal);
     height: 100%;
     text-align: left;
 }
@@ -1019,6 +1146,8 @@ body {
 
 .news-card {
     background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     overflow: hidden;
@@ -3056,7 +3185,9 @@ a:not(.nav-link):hover {
 }
 
 .profile-card {
-    background: var(--color-bg-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 175, 55, 0.2);
     border-radius: 12px;
     padding: 3rem;
