@@ -69,12 +69,18 @@ export const setupAudioPlayer = (audioData) => {
 };
 
 export const initVideoPlayer = (videoData) => {
+    console.log('🎬 Initializing Video Player with data:', videoData);
     const container = document.getElementById('video-player-content');
-    if (!container || !videoData) return;
+    if (!container || !videoData) {
+        console.error('❌ Player container or video data missing');
+        return;
+    }
 
     const url = videoData.url || '';
     const poster = videoData.thumbnail || 'images/logo-placeholder.png';
     const isYoutube = url.includes('youtube.com') || url.includes('youtu.be');
+
+    console.log(`📹 Video URL: ${url} (Is YouTube: ${isYoutube})`);
 
     let playerHtml = '';
     if (isYoutube) {
@@ -90,8 +96,8 @@ export const initVideoPlayer = (videoData) => {
     } else {
         playerHtml = `
             <div class="video-container">
-                <video controls autoplay crossorigin playsinline poster="${poster}" style="width: 100%; height: 100%;">
-                    <source src="${url}">
+                <video id="mainVideo" controls autoplay muted playsinline preload="auto" poster="${poster}" style="width: 100%; height: 100%;">
+                    <source src="${url}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -147,4 +153,15 @@ export const initVideoPlayer = (videoData) => {
             </div>
         </div>
     `;
+
+    // Add event listeners for direct video
+    if (!isYoutube) {
+        const video = document.getElementById('mainVideo');
+        video.addEventListener('loadeddata', () => {
+            console.log('✅ Video data loaded successfully');
+        });
+        video.addEventListener('error', (e) => {
+            console.error('❌ Video playback error:', video.error);
+        });
+    }
 };
