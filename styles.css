@@ -3206,25 +3206,58 @@ a:not(.nav-link):hover {
 }
 
 .btn-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
     background: var(--color-gold-primary);
-    color: #000;
+    color: var(--color-bg-primary);
     border: none;
-    padding: 6px 16px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: 600;
+    padding: 0.8rem 1.8rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-download:hover:not(:disabled) {
-    background: var(--color-gold-secondary);
-    transform: translateY(-2px);
+    background: var(--color-gold-light);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.5);
+}
+
+.btn-download:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.pdf-download-btn {
+    width: 100%;
+    margin-top: 1rem;
+    animation: pulse-gold 2.5s infinite;
+}
+
+@keyframes pulse-gold {
+    0% {
+        box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 12px rgba(197, 160, 89, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(197, 160, 89, 0);
+    }
 }
 
 .btn-download:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    animation: none;
 }
 
 /* ==========================================

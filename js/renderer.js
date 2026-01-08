@@ -134,7 +134,10 @@ export const renderPDFs = (container, pdfs, append = false) => {
             <div class="pdf-info">
                 <h4 class="pdf-title">${pdf.title}</h4>
                 <p class="pdf-meta">${pdf.category || 'Sheet Music'}</p>
-                <a href="${pdf.url}" target="_blank" class="pdf-download-link">Download PDF</a>
+                <a href="${pdf.url}" target="_blank" class="btn-download pdf-download-btn">
+                    <span class="material-icons">file_download</span>
+                    Download PDF
+                </a>
             </div>
         `;
         container.appendChild(card);
