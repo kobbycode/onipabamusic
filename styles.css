@@ -4980,7 +4980,7 @@ body {
         /* Hidden by default */
         position: fixed !important;
         /* Fix to viewport to avoid clipping */
-        bottom: 70px !important;
+        bottom: 80px !important;
         left: 10px !important;
         z-index: 99999 !important;
         /* Ensure it's on top of everything */
