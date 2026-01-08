@@ -10,6 +10,7 @@ import {
 import {
     fetchCollection,
     fetchDocument,
+    fetchSettings,
     initAuthListener,
     publicContentData
 } from "./services.js";
@@ -17,7 +18,8 @@ import {
     renderVideos,
     renderAudios,
     renderNews,
-    renderPDFs
+    renderPDFs,
+    renderSettings
 } from "./renderer.js";
 import { setupAudioPlayer, initVideoPlayer } from "./player.js";
 
@@ -27,6 +29,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     initRevealScroll();
     initHeaderScroll();
     highlightActiveNav();
+
+    // 1.5. Fetch and Render Overall Settings (Footer, Nav, Social)
+    const settings = await fetchSettings();
+    if (settings) {
+        renderSettings(settings);
+    }
 
     // 2. Auth Context
     initAuthListener((user) => {

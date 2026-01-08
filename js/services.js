@@ -100,6 +100,23 @@ export const fetchDocument = async (collName, docId) => {
 };
 
 /**
+ * Fetch general site settings
+ */
+export const fetchSettings = async () => {
+    try {
+        const docRef = doc(db, 'settings', 'general');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data();
+        }
+        return null;
+    } catch (err) {
+        logError('fetchSettings', err);
+        return null;
+    }
+};
+
+/**
  * Initialize Auth state listener
  */
 export const initAuthListener = (callback) => {

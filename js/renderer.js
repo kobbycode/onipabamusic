@@ -140,3 +140,53 @@ export const renderPDFs = (container, pdfs, append = false) => {
         container.appendChild(card);
     });
 };
+
+export const renderSettings = (settings) => {
+    if (!settings) return;
+
+    // 1. Render Navbar
+    if (settings.navLinks && settings.navLinks.length > 0) {
+        const navContainer = document.querySelector('.nav');
+        if (navContainer) {
+            const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+            navContainer.innerHTML = settings.navLinks.map(link =>
+                `<a href="${link.url}" class="nav-link ${currentPath === link.url ? 'active' : ''}">${link.text}</a>`
+            ).join('');
+        }
+    }
+
+    // 2. Render Footer
+    if (settings.footerSettings) {
+        const footerBrand = document.querySelector('.footer-brand');
+        if (footerBrand) {
+            const p = footerBrand.querySelector('p');
+            if (p && settings.footerSettings.description) p.textContent = settings.footerSettings.description;
+
+            // Handle footer title if exists in HTML but it's usually just description in our current HTML
+        }
+
+        const footerBottom = document.querySelector('.footer-bottom p');
+        if (footerBottom && settings.footerSettings.copyright) {
+            footerBottom.textContent = settings.footerSettings.copyright;
+        }
+
+        if (settings.footerSettings.newsletter) {
+            const newsHeader = document.querySelector('.newsletter-section h3');
+            if (newsHeader) newsHeader.textContent = settings.footerSettings.newsletter;
+        }
+    }
+
+    // 3. Render Social Links
+    const social = settings.socialSettings;
+    if (social) {
+        const facebookLinks = document.querySelectorAll('a[href*="facebook.com"], #contact-facebook');
+        const twitterLinks = document.querySelectorAll('a[href*="twitter.com"], #contact-twitter');
+        const instagramLinks = document.querySelectorAll('a[href*="instagram.com"], #contact-instagram');
+        const youtubeLinks = document.querySelectorAll('a[href*="youtube.com"], #contact-youtube');
+
+        if (social.facebook) facebookLinks.forEach(link => link.href = social.facebook);
+        if (social.twitter) twitterLinks.forEach(link => link.href = social.twitter);
+        if (social.instagram) instagramLinks.forEach(link => link.href = social.instagram);
+        if (social.youtube) youtubeLinks.forEach(link => link.href = social.youtube);
+    }
+};
