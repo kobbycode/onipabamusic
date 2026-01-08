@@ -3124,6 +3124,62 @@ a:not(.nav-link):hover {
     justify-content: flex-end;
 }
 
+/* Profile Page Mobile Refinements */
+@media (max-width: 768px) {
+    .profile-main {
+        padding: 120px 0 60px;
+    }
+
+    .profile-card {
+        padding: 2rem 1.25rem;
+        margin: 0 10px;
+        border-radius: 16px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .user-large-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .user-large-avatar svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    .profile-identity h1 {
+        font-size: 2rem;
+    }
+
+    .profile-details-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .detail-item p {
+        font-size: 1.1rem;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+        gap: 12px !important;
+    }
+
+    .profile-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+    }
+}
+
 /* ==========================================
    CHAT FIXES
    ========================================== */
