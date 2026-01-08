@@ -127,7 +127,7 @@ h4,
 
 .empty-state-premium p {
     color: var(--color-text-secondary);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     max-width: 300px;
     line-height: 1.6;
 }
@@ -1244,7 +1244,7 @@ a {
 }
 
 .news-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 1.4rem;
     font-weight: 700;
     line-height: 1.3;
@@ -3168,7 +3168,7 @@ a:not(.nav-link):hover {
 }
 
 .pdf-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 0.25rem;

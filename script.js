@@ -739,7 +739,7 @@ function renderPublicVideos(isLoadMore = false) {
             <div class="video-info" style="padding: 1.25rem;">
                 <div style="margin-bottom: 1rem;">
                     <span style="display: block; color: var(--color-text-secondary); font-size: 0.7rem; text-transform: uppercase;">Title</span>
-                    <h4 class="video-title" style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin: 0; color: #fff;">${video.title}</h4>
+                    <h4 class="video-title" style="font-size: 1.25rem; margin: 0; color: #fff;">${video.title}</h4>
                 </div>
             </div>
         </article>
