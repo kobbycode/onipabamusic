@@ -165,14 +165,12 @@ export class AuthManager {
         if (loginBtn && this.user) {
             const displayName = (this.userData && this.userData.name) || this.user.displayName || this.user.email.split('@')[0];
 
-            const initial = displayName.charAt(0).toUpperCase();
             loginBtn.innerHTML = `
-                <div class="user-avatar-small">${initial}</div>
                 <span class="user-name-small" style="font-weight: 600;">${displayName.split(' ')[0]}</span>
             `;
             loginBtn.classList.add('logged-in');
             loginBtn.href = 'profile.html';
-            loginBtn.style.padding = '4px 12px 4px 4px';
+            loginBtn.style.padding = '8px 16px';
         }
 
         // Init Profile Page specific logic
